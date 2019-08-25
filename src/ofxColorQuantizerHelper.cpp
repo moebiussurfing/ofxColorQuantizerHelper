@@ -76,8 +76,10 @@ void ofxColorQuantizerHelper::draw()
     {
         if (!ENABLE_minimal)
         {
-            int x = 50;//x pad for left/right window
-            int y = 250;
+            //int x = 50;//x pad for left/right window
+            //int y = 250;
+            int x = position.x + 40;//x pad for left/right window
+            int y = position.y + 240;
             boxPad = 2;//pad between boxes
 
             //-
@@ -109,11 +111,13 @@ void ofxColorQuantizerHelper::draw()
             image.draw(0, 0, ImgW, imgH);
 
             // resize box sizes
-            wPal = ofGetWidth() - (x + ImgW + x);
+            //wPal = ofGetWidth() - (x + ImgW + x);
+            wPal = size.x - (x + ImgW + x);
+
             boxW = wPal / colorQuantizer.getNumColors();
             boxSize = boxW - boxPad;
             //boxSize_h = boxSize;
-            boxSize_h = ofGetHeight() - (imgH + 20 + y + 100);
+            boxSize_h = ofGetHeight() - (imgH + 50 + y + 100);
 
             ofTranslate(0, imgH);
 
@@ -152,8 +156,10 @@ void ofxColorQuantizerHelper::draw()
             // MINI MODE
         else
         {
-            int x = 5;//x pad for left/right window
-            int y = 5;
+            //int x = 5;//x pad for left/right window
+            //int y = 5;
+            int x = position.x;//x pad for left/right window
+            int y = position.y;
             int pad = 5;
             boxPad = 0;//pad between boxes
 
@@ -181,7 +187,8 @@ void ofxColorQuantizerHelper::draw()
             // 2. right
             ofTranslate(ImgW + pad, 0);
             // resize box sizes
-            wPal = ofGetWidth() - (x + ImgW + x);
+            //wPal = ofGetWidth() - (x + ImgW + x);
+            wPal = size.x - (x + ImgW + x);
             boxW = wPal / colorQuantizer.getNumColors();
             boxSize = boxW - boxPad;
             boxSize_h = imgH;

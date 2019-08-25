@@ -29,6 +29,10 @@ public:
 
     // API
 
+    bool isActivated(){
+        return isActive;
+    }
+
     void setActive(bool b)
     {
         isActive = b;
@@ -52,16 +56,36 @@ public:
         ENABLE_minimal = b;
     }
 
+    glm::vec2 getPosition()
+    {
+        return position;
+    }
+    glm::vec2 getSize()
+    {
+        return size;
+    }
+    void setPosition(glm::vec2 p)
+    {
+        position = p;
+    }
+    void setSize(glm::vec2 s)
+    {
+        size = s;
+    }
+
     vector<ofColor> getPalette()
     {
         return palette;
     }
 
-    void draw_Palette_Preview();
-
     //--
 
 private:
+
+    void draw_Palette_Preview();
+
+    glm::vec2 position = glm::vec2(10,10);
+    glm::vec2 size = glm::vec2(1440,900);
 
     string pathFolder = "images/";
     bool isLoadedImage = false;

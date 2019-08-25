@@ -6,11 +6,12 @@ void ofApp::setup(){
 	ofSetFrameRate(30);
 
 	colorQuantizer.setup();
+    colorQuantizer.setPosition(glm::vec2(200, 200));
+    colorQuantizer.setSize(glm::vec2(1000, 700));
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-	colorQuantizer.update();
 }
 
 //--------------------------------------------------------------
@@ -28,6 +29,10 @@ void ofApp::exit(){
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 
+	if (key == ' ')
+	{
+		colorQuantizer.setActive(!colorQuantizer.isActivated());
+	}
 }
 
 //--------------------------------------------------------------
