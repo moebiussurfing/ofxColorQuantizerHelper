@@ -86,24 +86,26 @@ void ofxColorQuantizerHelper::draw()
 
             //-
 
-            // debug text
-            int il = 20;
-            int i = 1;
-            ofDrawBitmapStringHighlight("LOADED IMAGE path/url: '" + imageName_path + "'", 10, il * i++, ofColor::black, ofColor::white);
-            i++;
-            ofDrawBitmapStringHighlight("MINI MODE: [A]", 10, il * i++, ofColor::black, ofColor::white);
-            ofDrawBitmapStringHighlight("CHANGE COLORS AMOUNT: [LEFT-RIGHT]", 10, il * i++, ofColor::black, ofColor::white);
-            ofDrawBitmapStringHighlight("CHANGE SORTING: [BACKSPACE]", 10, il * i++, ofColor::black, ofColor::white);
-            ofDrawBitmapStringHighlight("SELECT IMAGE:", 10, il * i++, ofColor::black, ofColor::white);
-            ofDrawBitmapStringHighlight("FROM /images: [01234567][QWE][ASD][ZXC]", 10, il * i++, ofColor::black, ofColor::white);
-            ofDrawBitmapStringHighlight("FROM /images/drag: [UP-DOWN]", 10, il * i++, ofColor::black, ofColor::white);
-            ofDrawBitmapStringHighlight("drag images into window (/images/drag)", 10, il * i++, ofColor::black, ofColor::white);
-            ofDrawBitmapStringHighlight("SORTING: " + labelStr.get(), 10, il * i++, ofColor::black, ofColor::white);
-
             ofPushMatrix();
             ofPushStyle();
 
             ofTranslate(x, y);
+
+            // debug text
+            int il = 20;
+            int i = 1;
+            int posTxt = -220;
+            ofDrawBitmapStringHighlight("LOADED IMAGE path/url: '" + imageName_path + "'", 10, posTxt + il * i++, ofColor::black, ofColor::white);
+            i++;
+            ofDrawBitmapStringHighlight("MINI MODE: [A]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
+            ofDrawBitmapStringHighlight("CHANGE COLORS AMOUNT: [LEFT-RIGHT]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
+            ofDrawBitmapStringHighlight("CHANGE SORTING: [BACKSPACE]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
+            ofDrawBitmapStringHighlight("SELECT IMAGE:", 0, posTxt + il * i++, ofColor::black, ofColor::white);
+            ofDrawBitmapStringHighlight("FROM /images: [01234567][QWE][ASD][ZXC]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
+            ofDrawBitmapStringHighlight("FROM /images/drag: [UP-DOWN]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
+            ofDrawBitmapStringHighlight("drag images into window (/images/drag)", 0, posTxt + il * i++, ofColor::black, ofColor::white);
+            ofDrawBitmapStringHighlight("SORTING: " + labelStr.get(), 0, posTxt + il * i++, ofColor::black, ofColor::white);
+
             ofSetColor(255);
 
             // draw original image but resized to ImgW pixels width, same aspect ratio
@@ -124,12 +126,12 @@ void ofxColorQuantizerHelper::draw()
 
             ofTranslate(0, imgH);
 
-            // debug info
-            if (sortedType == 1)
-            {
-                ofSetColor(255, 100);
-                ofDrawBitmapString("(Original sorting has colors weighted based on their areas, their order is based on their chroma values)", 0, 50);
-            }
+            //// debug info
+            //if (sortedType == 1)
+            //{
+            //    ofSetColor(255, 100);
+            //    ofDrawBitmapString("(Original sorting has colors weighted based on their areas, their order is based on their chroma values)", 0, 50);
+            //}
 
             // all colors % bars
             ofTranslate(ImgW + 20, 0);
@@ -140,14 +142,14 @@ void ofxColorQuantizerHelper::draw()
                 ofSetColor(sortedColors[i].color);
                 ofDrawRectangle(i * (boxSize + boxPad), 0, boxSize, ofMap(sortedColors[i].weight, 0, 1, 0, -imgH));
                 ofSetColor(255);
-                ofDrawBitmapString(ofToString(int(sortedColors[i].weight * 100)) + "%", i * (boxSize + boxPad), 30);
+                ofDrawBitmapString(ofToString(int(sortedColors[i].weight * 100)) + "%", i * (boxSize + boxPad), 15);
             }
 
             ofTranslate(0, space);
 
-            // debug text
-            string str = "sorted palette preview (" + ofToString(labelStr) + ")";
-            ofDrawBitmapStringHighlight(str, 5, -10, ofColor::black, ofColor::white);
+            //// debug text
+            //string str = "sorted palette preview (" + ofToString(labelStr) + ")";
+            //ofDrawBitmapStringHighlight(str, 5, -10, ofColor::black, ofColor::white);
 
             // palette preview
             draw_Palette_Preview();
@@ -178,6 +180,16 @@ void ofxColorQuantizerHelper::draw()
                 int ImgW = 200;
                 int imgH = imgRatio * ImgW;
                 image.draw(0, ofGetHeight() - (imgH + pad), ImgW, imgH);
+
+                //image border
+                if (bUseBorder)
+                {
+                    ofRectangle r;
+                    r = ofRectangle(0, ofGetHeight() - (imgH + pad), ImgW, imgH);
+                    ofNoFill();
+                    ofSetColor(ofColor(ofColor::white, 64));
+                    ofDrawRectangle(r);
+                }
 
                 // palette position
                 ofTranslate(ImgW + pad, 0);
@@ -501,18 +513,24 @@ void ofxColorQuantizerHelper::draw_Palette_Preview()
 {
     ofPushMatrix();
     ofPushStyle();
-    ofFill();
 
     ofRectangle r;
+    r = ofRectangle(0, 0, boxSize, boxSize_h);
 
     for (int col = 0; col < palette.size(); col++)
     {
-        r = ofRectangle(0, 0, boxSize, boxSize_h);
-
+        ofFill();
         ofSetColor(colorMapSortable[col].color);
         //ofSetColor(palette[col]);
-
         ofDrawRectangle(r);
+
+        if (bUseBorder)
+        {
+            ofNoFill();
+            ofSetColor(ofColor(ofColor::white, 64));
+            ofDrawRectangle(r);
+        }
+
         ofTranslate(boxSize + boxPad, 0);
     }
 

@@ -95,6 +95,7 @@ public:
 
 private:
 
+
     //--
 
     // pointers back to 'communicate externally'
@@ -104,8 +105,9 @@ private:
     bool *bUpdated_Palette_BACK;
     bool *bUpdated_Color_BACK;
 
-
     void draw_Palette_Preview();
+
+    bool bUseBorder = true;
 
     glm::vec2 position = glm::vec2(10,10);
     glm::vec2 size = glm::vec2(1440,900);
