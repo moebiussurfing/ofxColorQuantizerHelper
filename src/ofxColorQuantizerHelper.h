@@ -80,7 +80,24 @@ public:
 
     //--
 
+    // pointers back to 'communicate externally'
+    void setPalette_BACK(vector<ofColor> &p);
+    void setPalette_bUpdated_Palette_BACK(bool &b);
+    void setColor_BACK(ofColor &c);
+    void setPalette_Name_BACK(string &n);
+    void setPalette_bUpdated_Color_BACK(bool &b);
+
 private:
+
+    //--
+
+    // pointers back to 'communicate externally'
+    ofColor *myColor_BACK;
+    vector<ofColor> *myPalette_BACK;
+    string *myPalette_Name_BACK;
+    bool *bUpdated_Palette_BACK;
+    bool *bUpdated_Color_BACK;
+
 
     void draw_Palette_Preview();
 
@@ -96,6 +113,7 @@ private:
 
     ofImage image;
     ofImage imageCopy;
+    string imageName_path;
     string imageName;
 
     struct weightedColor

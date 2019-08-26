@@ -40,8 +40,9 @@ void ofxColorQuantizerHelper::setup()
     parameters.add(sortedType.set("sort type", 1, 1, 4));
     parameters.add(labelStr.set(" ", labelStr));
     //parameters.add(labelUrlStr.set("type url", labelUrlStr));
-    parameters.add(currentImage.set("dragged files ", 0, 0, dir.size()-1));
+    parameters.add(currentImage.set("dragged files ", 0, 0, dir.size() - 1));
     parameters.add(bReBuild.set("re build", false));
+
     gui.add(parameters);
     gui.setPosition(ofGetWidth() - 205, 5);
     ofAddListener(parameters.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
@@ -58,8 +59,9 @@ void ofxColorQuantizerHelper::setup()
     //-
 
     // STARTUP
-    imageName = "0.jpg";
-    buildFromImageFile(pathFolder + imageName, numColors);
+    imageName_path = "0.jpg";
+    imageName = "0";
+    buildFromImageFile(pathFolder + imageName_path, numColors);
 }
 
 
@@ -76,10 +78,10 @@ void ofxColorQuantizerHelper::draw()
     {
         if (!ENABLE_minimal)
         {
-            //int x = 50;//x pad for left/right window
-            //int y = 250;
-            int x = position.x + 40;//x pad for left/right window
-            int y = position.y + 240;
+            int x = position.x;//x pad for left/right window
+            int y = position.y;
+            int margin = 5;
+            int space = 50;
             boxPad = 2;//pad between boxes
 
             //-
@@ -87,9 +89,9 @@ void ofxColorQuantizerHelper::draw()
             // debug text
             int il = 20;
             int i = 1;
-            ofDrawBitmapStringHighlight("LOADED IMAGE path/url: '" + imageName + "'", 10, il * i++, ofColor::black, ofColor::white);
+            ofDrawBitmapStringHighlight("LOADED IMAGE path/url: '" + imageName_path + "'", 10, il * i++, ofColor::black, ofColor::white);
             i++;
-            ofDrawBitmapStringHighlight("MINI MODE: [G]", 10, il * i++, ofColor::black, ofColor::white);
+            ofDrawBitmapStringHighlight("MINI MODE: [A]", 10, il * i++, ofColor::black, ofColor::white);
             ofDrawBitmapStringHighlight("CHANGE COLORS AMOUNT: [LEFT-RIGHT]", 10, il * i++, ofColor::black, ofColor::white);
             ofDrawBitmapStringHighlight("CHANGE SORTING: [BACKSPACE]", 10, il * i++, ofColor::black, ofColor::white);
             ofDrawBitmapStringHighlight("SELECT IMAGE:", 10, il * i++, ofColor::black, ofColor::white);
@@ -112,12 +114,13 @@ void ofxColorQuantizerHelper::draw()
 
             // resize box sizes
             //wPal = ofGetWidth() - (x + ImgW + x);
-            wPal = size.x - (x + ImgW + x);
+            //wPal = size.x - (x + ImgW + x);
+            wPal = size.x - (margin + ImgW + margin);
 
             boxW = wPal / colorQuantizer.getNumColors();
             boxSize = boxW - boxPad;
             //boxSize_h = boxSize;
-            boxSize_h = ofGetHeight() - (imgH + 50 + y + 100);
+            boxSize_h = ofGetHeight() - (imgH + 50 + y + space);
 
             ofTranslate(0, imgH);
 
@@ -140,7 +143,7 @@ void ofxColorQuantizerHelper::draw()
                 ofDrawBitmapString(ofToString(int(sortedColors[i].weight * 100)) + "%", i * (boxSize + boxPad), 30);
             }
 
-            ofTranslate(0, 100);
+            ofTranslate(0, space);
 
             // debug text
             string str = "sorted palette preview (" + ofToString(labelStr) + ")";
@@ -188,7 +191,8 @@ void ofxColorQuantizerHelper::draw()
             ofTranslate(ImgW + pad, 0);
             // resize box sizes
             //wPal = ofGetWidth() - (x + ImgW + x);
-            wPal = size.x - (x + ImgW + x);
+            //wPal = size.x - (x + ImgW + x);
+            wPal = size.x - (pad + ImgW + pad);
             boxW = wPal / colorQuantizer.getNumColors();
             boxSize = boxW - boxPad;
             boxSize_h = imgH;
@@ -294,12 +298,47 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter &e)
             default:
                 break;
         }
+
+        //--
+
+        // pointers back to 'communicate externally'
+
+        int sizePalette = palette.size();
+        if (sizePalette > 0 && myPalette_BACK != nullptr)
+        {
+            // set BACK name clicked
+            if (myPalette_Name_BACK != nullptr)
+            {
+                (*myPalette_Name_BACK) = imageName;
+            }
+
+            //-
+
+            // set BACK palette colors
+            myPalette_BACK->clear();
+            myPalette_BACK->resize(sizePalette);
+
+            //// 1. get unsorted palette
+            //(*myPalette_BACK) = palette;
+
+            // 2. get palette sorted
+            for (int col = 0; col < palette.size(); col++)
+            {
+                (*myPalette_BACK)[col] = colorMapSortable[col].color;
+            }
+
+            // mark update flag
+            if (bUpdated_Palette_BACK != nullptr)
+            {
+                (*bUpdated_Palette_BACK) = true;
+            }
+        }
     }
     else if (WIDGET_name == "type url")
     {
-        imageName = labelUrlStr;
-        buildFromImageFile(imageName, numColors);
-        ofLogNotice() << "type url: " << imageName;
+        imageName_path = labelUrlStr;
+        buildFromImageFile(imageName_path, numColors);
+        ofLogNotice() << "type url: " << imageName_path;
     }
     else if (WIDGET_name == "re build")
     {
@@ -365,6 +404,41 @@ void ofxColorQuantizerHelper::map_setup()
             break;
         default:
             break;
+    }
+
+    //--
+
+    // pointers back to 'communicate externally'
+
+    int sizePalette = palette.size();
+    if (sizePalette > 0 && myPalette_BACK != nullptr)
+    {
+        // set BACK name clicked
+        if (myPalette_Name_BACK != nullptr)
+        {
+            (*myPalette_Name_BACK) = imageName;
+        }
+
+        //-
+
+        // set BACK palette colors
+        myPalette_BACK->clear();
+        myPalette_BACK->resize(sizePalette);
+
+        //// 1. get unsorted palette
+        //(*myPalette_BACK) = palette;
+
+        // 2. get palette sorted
+        for (int col = 0; col < palette.size(); col++)
+        {
+            (*myPalette_BACK)[col] = colorMapSortable[col].color;
+        }
+
+        // mark update flag
+        if (bUpdated_Palette_BACK != nullptr)
+        {
+            (*bUpdated_Palette_BACK) = true;
+        }
     }
 }
 
@@ -456,7 +530,7 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
     cout << "key: " << key << endl;
 
     // minimal mode
-    if (key == 'g')
+    if (key == 'a')
     {
         ENABLE_minimal = !ENABLE_minimal;
     }
@@ -494,8 +568,9 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
 
         if (dir.size() > 0 && currentImage < dir.size() - 1)
         {
-            imageName = dir.getPath(currentImage);
-            buildFromImageFile(imageName, numColors);
+            imageName = dir.getName(currentImage);
+            imageName_path = dir.getPath(currentImage);
+            buildFromImageFile(imageName_path, numColors);
         }
     }
     if (key == OF_KEY_DOWN)
@@ -513,127 +588,129 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
 
         if (dir.size() > 0 && currentImage < dir.size() - 1)
         {
-            imageName = dir.getPath(currentImage);
-            buildFromImageFile(imageName, numColors);
+            imageName = dir.getName(currentImage);
+            imageName_path = dir.getPath(currentImage);
+            buildFromImageFile(imageName_path, numColors);
         }
     }
 
     //-
 
-    // files
-
-    if (key == '0')
-    {
-        imageName = "0.jpg";
-        buildFromImageFile(pathFolder + imageName, numColors);
-    }
-    if (key == '1')
-    {
-        imageName = "1.jpg";
-        buildFromImageFile(pathFolder + imageName, numColors);
-    }
-    if (key == '2')
-    {
-        imageName = "2.jpg";
-        buildFromImageFile(pathFolder + imageName, numColors);
-    }
-    if (key == '3')
-    {
-        imageName = "3.jpg";
-        buildFromImageFile(pathFolder + imageName, numColors);
-    }
-    if (key == '4')
-    {
-        imageName = "4.jpg";
-        buildFromImageFile(pathFolder + imageName, numColors);
-    }
-    if (key == '5')
-    {
-        imageName = "5.jpg";
-        buildFromImageFile(pathFolder + imageName, numColors);
-    }
-    if (key == '6')
-    {
-        imageName = "6.jpg";
-        buildFromImageFile(pathFolder + imageName, numColors);
-    }
-    if (key == '7')
-    {
-        imageName = "7.jpg";
-        buildFromImageFile(pathFolder + imageName, numColors);
-    }
-
-    //-
-
-    // urls palettes
-
-    if (key == 'q')
-    {
-        imageName = "https://mk0learntocodew6bl5f.kinstacdn.com/wp-content/uploads/2016/01/material-palette.png";
-        buildFromImageFile(imageName, numColors);
-    }
-
-    if (key == 'w')
-    {
-        imageName = "https://as1.ftcdn.net/jpg/02/13/60/70/500_F_213607058_uz3KRA8ASgk89L1DahwlfHrfQ74T2g5n.jpg";
-        buildFromImageFile(imageName, numColors);
-    }
-
-    if (key == 'e')
-    {
-        imageName = "https://creativepro.com/wp-content/uploads/sites/default/files/styles/article-full-column-width/public/20140306-color1.jpg?itok=3oHDuKTN";
-        buildFromImageFile(imageName, numColors);
-    }
+    //TODO
+    //// files
+    //
+    //if (key == '0')
+    //{
+    //    imageName_path = "0.jpg";
+    //    buildFromImageFile(pathFolder + imageName_path, numColors);
+    //}
+    //if (key == '1')
+    //{
+    //    imageName_path = "1.jpg";
+    //    buildFromImageFile(pathFolder + imageName_path, numColors);
+    //}
+    //if (key == '2')
+    //{
+    //    imageName_path = "2.jpg";
+    //    buildFromImageFile(pathFolder + imageName_path, numColors);
+    //}
+    //if (key == '3')
+    //{
+    //    imageName_path = "3.jpg";
+    //    buildFromImageFile(pathFolder + imageName_path, numColors);
+    //}
+    //if (key == '4')
+    //{
+    //    imageName_path = "4.jpg";
+    //    buildFromImageFile(pathFolder + imageName_path, numColors);
+    //}
+    //if (key == '5')
+    //{
+    //    imageName_path = "5.jpg";
+    //    buildFromImageFile(pathFolder + imageName_path, numColors);
+    //}
+    //if (key == '6')
+    //{
+    //    imageName_path = "6.jpg";
+    //    buildFromImageFile(pathFolder + imageName_path, numColors);
+    //}
+    //if (key == '7')
+    //{
+    //    imageName_path = "7.jpg";
+    //    buildFromImageFile(pathFolder + imageName_path, numColors);
+    //}
 
     //-
 
-    // url pictures
-
-    if (key == 'a')
-    {
-        imageName = "https://hips.hearstapps.com/esq.h-cdn.co/assets/16/20/blade-runner_1.jpg";
-        buildFromImageFile(imageName, numColors);
-    }
-
-    if (key == 's')
-    {
-        imageName = "https://www.eldiario.es/fotos/Paleta-San-Junipero-Black-Mirror_EDIIMA20190731_0485_19.jpg";
-        buildFromImageFile(imageName, numColors);
-    }
-
-    if (key == 'd')
-    {
-        imageName = "https://www.eldiario.es/fotos/Paleta-colores-verdes-escena-Land_EDIIMA20190731_0457_19.jpg";
-        buildFromImageFile(imageName, numColors);
-    }
-
-    if (key == 'f')
-    {
-        imageName = "http://mymodernmet.com/wp/wp-content/uploads/2017/08/palette-maniac-15.jpg";
-        buildFromImageFile(imageName, numColors);
-    }
-
-    //-
-
-    // more url
-
-    if (key == 'z')
-    {
-        imageName = "https://s3.amazonaws.com/images.gearjunkie.com/uploads/2018/05/matterhorn-3x2.jpg";
-        buildFromImageFile(imageName, numColors);
-    }
-
-    if (key == 'x')
-    {
-        imageName = "http://cdn.cnn.com/cnnnext/dam/assets/170407220916-04-iconic-mountains-matterhorn-restricted.jpg";
-        buildFromImageFile(imageName, numColors);
-    }
-
-    if (key == 'c')
-    {
-        imageName = "https://store-images.s-microsoft.com/image/apps.33776.13570837168441901.d8820ad6-c4ef-45a9-accb-c6dd763aee48.560134ce-5fa0-4486-95cd-b0ba8d4921ff?w=672&h=378&q=80&mode=letterbox&background=%23FFE4E4E4&format=jpg";
-        buildFromImageFile(imageName, numColors);
-    }
+    //// urls palettes
+    //
+    //if (key == 'q')
+    //{
+    //    imageName_path = "https://mk0learntocodew6bl5f.kinstacdn.com/wp-content/uploads/2016/01/material-palette.png";
+    //    buildFromImageFile(imageName_path, numColors);
+    //}
+    //
+    //if (key == 'w')
+    //{
+    //    imageName_path = "https://as1.ftcdn.net/jpg/02/13/60/70/500_F_213607058_uz3KRA8ASgk89L1DahwlfHrfQ74T2g5n.jpg";
+    //    buildFromImageFile(imageName_path, numColors);
+    //}
+    //
+    //if (key == 'e')
+    //{
+    //    imageName_path = "https://creativepro.com/wp-content/uploads/sites/default/files/styles/article-full-column-width/public/20140306-color1.jpg?itok=3oHDuKTN";
+    //    buildFromImageFile(imageName_path, numColors);
+    //}
+    //
+    ////-
+    //
+    //// url pictures
+    //
+    //if (key == 'a')
+    //{
+    //    imageName_path = "https://hips.hearstapps.com/esq.h-cdn.co/assets/16/20/blade-runner_1.jpg";
+    //    buildFromImageFile(imageName_path, numColors);
+    //}
+    //
+    //if (key == 's')
+    //{
+    //    imageName_path = "https://www.eldiario.es/fotos/Paleta-San-Junipero-Black-Mirror_EDIIMA20190731_0485_19.jpg";
+    //    buildFromImageFile(imageName_path, numColors);
+    //}
+    //
+    //if (key == 'd')
+    //{
+    //    imageName_path = "https://www.eldiario.es/fotos/Paleta-colores-verdes-escena-Land_EDIIMA20190731_0457_19.jpg";
+    //    buildFromImageFile(imageName_path, numColors);
+    //}
+    //
+    //if (key == 'f')
+    //{
+    //    imageName_path = "http://mymodernmet.com/wp/wp-content/uploads/2017/08/palette-maniac-15.jpg";
+    //    buildFromImageFile(imageName_path, numColors);
+    //}
+    //
+    ////-
+    //
+    //// more url
+    //
+    //if (key == 'z')
+    //{
+    //    imageName_path = "https://s3.amazonaws.com/images.gearjunkie.com/uploads/2018/05/matterhorn-3x2.jpg";
+    //    buildFromImageFile(imageName_path, numColors);
+    //}
+    //
+    //if (key == 'x')
+    //{
+    //    imageName_path = "http://cdn.cnn.com/cnnnext/dam/assets/170407220916-04-iconic-mountains-matterhorn-restricted.jpg";
+    //    buildFromImageFile(imageName_path, numColors);
+    //}
+    //
+    //if (key == 'c')
+    //{
+    //    imageName_path = "https://store-images.s-microsoft.com/image/apps.33776.13570837168441901.d8820ad6-c4ef-45a9-accb-c6dd763aee48.560134ce-5fa0-4486-95cd-b0ba8d4921ff?w=672&h=378&q=80&mode=letterbox&background=%23FFE4E4E4&format=jpg";
+    //    buildFromImageFile(imageName_path, numColors);
+    //}
 
     //-
 
@@ -670,11 +747,11 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
 
     //-
 
-    // test kMeansTest
-    if (key == 'k')
-    {
-        kMeansTest();
-    }
+    //// test kMeansTest
+    //if (key == 'k')
+    //{
+    //    kMeansTest();
+    //}
 }
 
 //--------------------------------------------------------------
@@ -784,8 +861,8 @@ void ofxColorQuantizerHelper::dragEvent(ofDragInfo &eventArgs)
             draggedImages[k].load(info.files[k]);
 
             //// create palette from file
-            //imageName = info.files[k];
-            //buildFromImageFile(imageName, numColors);
+            //imageName_path = info.files[k];
+            //buildFromImageFile(imageName_path, numColors);
 
             // save dragged file to data folder
             string fileName = "img_" + ofToString(ofGetTimestampString() + ".png");
@@ -793,8 +870,8 @@ void ofxColorQuantizerHelper::dragEvent(ofDragInfo &eventArgs)
         }
 
         // create palette from last file
-        imageName = info.files[info.files.size() - 1];
-        buildFromImageFile(imageName, numColors);
+        imageName_path = info.files[info.files.size() - 1];
+        buildFromImageFile(imageName_path, numColors);
 
         dir.listDir(pathFolerDrag);
         dir.allowExt("jpg");
@@ -841,4 +918,40 @@ void ofxColorQuantizerHelper::XML_save_AppSettings(ofParameterGroup &g, string p
     ofXml settings;
     ofSerialize(settings, g);
     settings.save(path);
+}
+
+// pointers back to 'communicate externally'
+
+//--------------------------------------------------------------
+void ofxColorQuantizerHelper::setColor_BACK(ofColor &c)
+{
+    myColor_BACK = &c;
+}
+
+
+//--------------------------------------------------------------
+void ofxColorQuantizerHelper::setPalette_BACK(vector<ofColor> &p)
+{
+    myPalette_BACK = &p;
+}
+
+
+//--------------------------------------------------------------
+void ofxColorQuantizerHelper::setPalette_bUpdated_Palette_BACK(bool &b)
+{
+    bUpdated_Palette_BACK = &b;
+}
+
+
+//--------------------------------------------------------------
+void ofxColorQuantizerHelper::setPalette_bUpdated_Color_BACK(bool &b)
+{
+    bUpdated_Color_BACK = &b;
+}
+
+
+//--------------------------------------------------------------
+void ofxColorQuantizerHelper::setPalette_Name_BACK(string &n)
+{
+    myPalette_Name_BACK = &n;
 }
