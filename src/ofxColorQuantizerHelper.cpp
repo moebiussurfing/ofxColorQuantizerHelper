@@ -108,7 +108,7 @@ void ofxColorQuantizerHelper::draw()
 
             // draw original image but resized to ImgW pixels width, same aspect ratio
             float imgRatio = image.getHeight() / image.getWidth();
-            int ImgW = 200;
+            int ImgW = 100;
             int imgH = imgRatio * ImgW;
             image.draw(0, 0, ImgW, imgH);
 
@@ -159,50 +159,83 @@ void ofxColorQuantizerHelper::draw()
             // MINI MODE
         else
         {
-            //int x = 5;//x pad for left/right window
-            //int y = 5;
-            int x = position.x;//x pad for left/right window
-            int y = position.y;
-            int pad = 5;
-            boxPad = 0;//pad between boxes
+            if (bottomMode)
+            {
+                //ignore y position and put at the window bottom
+                int x = position.x;//x pad for left/right window
+                //int y = position.y;
+                int pad = 2;
+                boxPad = 0;//pad between boxes
 
-            ofPushMatrix();
-            ofPushStyle();
+                ofPushMatrix();
+                ofPushStyle();
 
-            ofTranslate(x, y);
-            ofSetColor(255);
+                ofTranslate(x, 0);
+                ofSetColor(255);
 
-            // draw original image but resized to ImgW pixels width, same aspect ratio
-            float imgRatio = image.getHeight() / image.getWidth();
-            int ImgW = 200;
-            int imgH = imgRatio * ImgW;
-            image.draw(0, 0, ImgW, imgH);
+                // draw original image but resized to ImgW pixels width, same aspect ratio
+                float imgRatio = image.getHeight() / image.getWidth();
+                int ImgW = 200;
+                int imgH = imgRatio * ImgW;
+                image.draw(0, ofGetHeight() - (imgH + pad), ImgW, imgH);
 
-            // palette position
+                // palette position
+                ofTranslate(ImgW + pad, 0);
+                // resize box sizes
+                wPal = size.x - (pad + ImgW + pad);
+                boxW = wPal / colorQuantizer.getNumColors();
+                boxSize = boxW - boxPad;
+                boxSize_h = imgH;
 
-            //// 1. down
-            //ofTranslate(0, imgH);
-            //// resize box sizes
-            //wPal = ofGetWidth() - (x + ImgW + x);
-            //boxW = wPal / colorQuantizer.getNumColors();
-            //boxSize = boxW - boxPad;
+                // palette preview
+                ofTranslate(0, ofGetHeight() - (boxSize_h + pad));
+                draw_Palette_Preview();
 
-            // 2. right
-            ofTranslate(ImgW + pad, 0);
-            // resize box sizes
-            //wPal = ofGetWidth() - (x + ImgW + x);
-            //wPal = size.x - (x + ImgW + x);
-            wPal = size.x - (pad + ImgW + pad);
-            boxW = wPal / colorQuantizer.getNumColors();
-            boxSize = boxW - boxPad;
-            boxSize_h = imgH;
+                ofPopStyle();
+                ofPopMatrix();
+            }
+            else
+            {
+                int x = position.x;//x pad for left/right window
+                int y = position.y;
+                int pad = 5;
+                boxPad = 0;//pad between boxes
 
-            // palette preview
-            //ofTranslate(0, 0);
-            draw_Palette_Preview();
+                ofPushMatrix();
+                ofPushStyle();
 
-            ofPopStyle();
-            ofPopMatrix();
+                ofTranslate(x, y);
+                ofSetColor(255);
+
+                // draw original image but resized to ImgW pixels width, same aspect ratio
+                float imgRatio = image.getHeight() / image.getWidth();
+                int ImgW = 200;
+                int imgH = imgRatio * ImgW;
+                image.draw(0, 0, ImgW, imgH);
+
+                // palette position
+
+                //// 1. down
+                //ofTranslate(0, imgH);
+                //// resize box sizes
+                //wPal = ofGetWidth() - (x + ImgW + x);
+                //boxW = wPal / colorQuantizer.getNumColors();
+                //boxSize = boxW - boxPad;
+
+                // 2. right
+                ofTranslate(ImgW + pad, 0);
+                // resize box sizes
+                wPal = size.x - (pad + ImgW + pad);
+                boxW = wPal / colorQuantizer.getNumColors();
+                boxSize = boxW - boxPad;
+                boxSize_h = imgH;
+
+                // palette preview
+                draw_Palette_Preview();
+
+                ofPopStyle();
+                ofPopMatrix();
+            }
         }
     }
 

@@ -51,6 +51,12 @@ public:
         }
     }
 
+    bool bottomMode = false;
+    void setBottomMode(bool b)
+    {
+        bottomMode = b;
+    }
+
     void setMinimal(bool b)
     {
         ENABLE_minimal = b;
