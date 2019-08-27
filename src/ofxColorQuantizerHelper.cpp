@@ -95,16 +95,16 @@ void ofxColorQuantizerHelper::draw()
             int il = 20;
             int i = 1;
             int posTxt = -220;
-            ofDrawBitmapStringHighlight("LOADED IMAGE path/url: '" + imageName_path + "'", 10, posTxt + il * i++, ofColor::black, ofColor::white);
+            ofDrawBitmapStringHighlight("LOADED IMAGE path/url: '" + imageName_path + "'", 0, posTxt + il * i++, ofColor::black, ofColor::white);
             i++;
             ofDrawBitmapStringHighlight("MINI MODE: [A]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
             ofDrawBitmapStringHighlight("CHANGE COLORS AMOUNT: [LEFT-RIGHT]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
             ofDrawBitmapStringHighlight("CHANGE SORTING: [BACKSPACE]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
             ofDrawBitmapStringHighlight("SELECT IMAGE:", 0, posTxt + il * i++, ofColor::black, ofColor::white);
-            ofDrawBitmapStringHighlight("FROM /images: [01234567][QWE][ASD][ZXC]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
+            //ofDrawBitmapStringHighlight("FROM /images: [01234567][QWE][ASD][ZXC]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
             ofDrawBitmapStringHighlight("FROM /images/drag: [UP-DOWN]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
-            ofDrawBitmapStringHighlight("drag images into window (/images/drag)", 0, posTxt + il * i++, ofColor::black, ofColor::white);
             ofDrawBitmapStringHighlight("SORTING: " + labelStr.get(), 0, posTxt + il * i++, ofColor::black, ofColor::white);
+            ofDrawBitmapStringHighlight("drag images into window (/images/drag)", 0, posTxt + il * i++, ofColor::black, ofColor::white);
 
             ofSetColor(255);
 
