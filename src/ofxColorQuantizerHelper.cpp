@@ -597,19 +597,19 @@ void ofxColorQuantizerHelper::kMeansTest()
     cv::Mat centers;
     double compactness = cv::kmeans(samples, 3, labels, cv::TermCriteria(), 2, cv::KMEANS_PP_CENTERS, centers);
 
-    cout << "labels:" << endl;
+    ofLogNotice("ofxColorQuantizerHelper") << "labels:";
     for (int i = 0; i < labels.rows; ++i)
     {
-        cout << labels.at<int>(0, i) << endl;
+        ofLogNotice("ofxColorQuantizerHelper") << labels.at<int>(0, i);
     }
 
-    cout << "\ncenters:" << endl;
+    ofLogNotice("ofxColorQuantizerHelper") << "\ncenters:" << endl;
     for (int i = 0; i < centers.rows; ++i)
     {
-        cout << centers.at<float>(0, i) << endl;
+        ofLogNotice("ofxColorQuantizerHelper") << centers.at<float>(0, i);
     }
 
-    cout << "\ncompactness: " << compactness << endl;
+    ofLogNotice("ofxColorQuantizerHelper") << "\ncompactness: " << compactness;
 }
 
 
@@ -623,7 +623,7 @@ ofxColorQuantizerHelper::ofxColorQuantizerHelper()
 void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
 {
     const int &key = eventArgs.key;
-    cout << "key: " << key << endl;
+    ofLogNotice("ofxColorQuantizerHelper") << "key: " << key;
 
     // minimal mode
     if (key == 'a')
@@ -664,7 +664,7 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
             currentImage = dir.size() - 1;
         //currentImage = 0;
 
-        cout << "currentImage:" << ofToString(currentImage) << endl;
+        ofLogNotice("ofxColorQuantizerHelper") << "currentImage:" << ofToString(currentImage);
 
         if (dir.size() > 0 && currentImage < dir.size() - 1)
         {
@@ -688,7 +688,7 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
 
         //currentImage = dir.size() - 1;
 
-        cout << "currentImage:" << ofToString(currentImage) << endl;
+        ofLogNotice("ofxColorQuantizerHelper") << "currentImage:" << ofToString(currentImage);
 
         if (dir.size() > 0 && currentImage < dir.size())
         {
