@@ -206,7 +206,7 @@ private:
     void XML_save_AppSettings(ofParameterGroup &g, string path);
     void XML_load_AppSettings(ofParameterGroup &g, string path);
     ofParameterGroup XML_params;
-    string XML_path = "ofxColorQuantizerHelper.xml";
+    string XML_path = "settings/ofxColorQuantizerHelper.xml";
 
 };
 
