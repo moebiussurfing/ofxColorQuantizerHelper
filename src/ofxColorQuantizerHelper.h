@@ -29,6 +29,8 @@ public:
 
     // API
 
+    void filesRefresh();
+
     bool isActivated(){
         return isActive;
     }
@@ -93,8 +95,10 @@ public:
     void setPalette_Name_BACK(string &n);
     void setPalette_bUpdated_Color_BACK(bool &b);
 
-private:
+    //build palette from already quantized and sorted colors
+    void map_setup();
 
+private:
 
     //--
 
@@ -148,7 +152,6 @@ private:
     void buildFromImageFile(string path, int num);
     void buildFromImageUrl(string url, int num);
 
-    void map_setup();
     map<int, ofColor> colorMap;
     vector<colorMapping> colorMapSortable;
 
@@ -164,10 +167,10 @@ private:
     // main palette
     vector<ofColor> palette;
 
-    int boxSize;
+    float boxSize;
     int boxSize_h;
     int boxPad;
-    int boxW;
+    float boxW;
     int wPal;
 
     void kMeansTest();
@@ -177,7 +180,7 @@ private:
     ofPoint dragPt;
     void draw_imageDragged();
     ofParameter<int> currentImage;
-    string pathFolerDrag = "images/drag/";
+    string pathFolerDrag = "images/";
     ofDirectory dir;
 
     ofParameter<bool> ENABLE_minimal{"MINIMAL", false};

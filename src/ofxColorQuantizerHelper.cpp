@@ -20,17 +20,44 @@ bool compareSaturation(const colorMapping &s1, const colorMapping &s2)
 {
     return s1.color.getSaturation() < s2.color.getSaturation();
 }
-
-
 //--------------------------------------------------------------
-void ofxColorQuantizerHelper::setup()
+void ofxColorQuantizerHelper::filesRefresh()
 {
     // load dragged images folder
+    ofLogNotice("ofxColorQuantizerHelper") << "list files " << pathFolerDrag;
     dir.listDir(pathFolerDrag);
     dir.allowExt("jpg");
     dir.allowExt("png");
     dir.sort();
 
+    // STARTUP QUANTIZER COLOR
+    //imageName_path = "0.jpg";
+    //imageName = "0";
+    //buildFromImageFile(pathFolder + imageName_path, numColors);
+
+    // load first file in dir
+    if (dir.size() > 0)
+        currentImage = 0;
+    else
+        currentImage = -1;
+
+    if (dir.size() > 0 && currentImage < dir.size() - 1)
+    {
+        imageName = dir.getName(currentImage);
+        imageName_path = dir.getPath(currentImage);
+        buildFromImageFile(imageName_path, numColors);
+    }
+
+    // log files on folder
+    for (int i = 0; i < dir.size(); i++)
+    {
+        ofLogNotice("ofxColorQuantizerHelper") << "file " << "[" << ofToString(i) << "] " << dir.getName(i);
+    }
+}
+
+//--------------------------------------------------------------
+void ofxColorQuantizerHelper::setup()
+{
     //-
 
     // gui
@@ -58,10 +85,9 @@ void ofxColorQuantizerHelper::setup()
 
     //-
 
-    // STARTUP
-    imageName_path = "0.jpg";
-    imageName = "0";
-    buildFromImageFile(pathFolder + imageName_path, numColors);
+    filesRefresh();
+
+
 }
 
 
@@ -76,6 +102,7 @@ void ofxColorQuantizerHelper::draw()
 {
     if (isLoadedImage)
     {
+        // 1. debug big window
         if (!ENABLE_minimal)
         {
             int x = position.x;//x pad for left/right window
@@ -94,16 +121,17 @@ void ofxColorQuantizerHelper::draw()
             // debug text
             int il = 20;
             int i = 1;
-            int posTxt = -220;
+            int posTxt = -210;
             ofDrawBitmapStringHighlight("LOADED IMAGE path/url: '" + imageName_path + "'", 0, posTxt + il * i++, ofColor::black, ofColor::white);
             i++;
             ofDrawBitmapStringHighlight("MINI MODE: [A]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
             ofDrawBitmapStringHighlight("CHANGE COLORS AMOUNT: [LEFT-RIGHT]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
             ofDrawBitmapStringHighlight("CHANGE SORTING: [BACKSPACE]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
-            ofDrawBitmapStringHighlight("SELECT IMAGE:", 0, posTxt + il * i++, ofColor::black, ofColor::white);
-            //ofDrawBitmapStringHighlight("FROM /images: [01234567][QWE][ASD][ZXC]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
-            ofDrawBitmapStringHighlight("FROM /images/drag: [UP-DOWN]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
             ofDrawBitmapStringHighlight("SORTING: " + labelStr.get(), 0, posTxt + il * i++, ofColor::black, ofColor::white);
+            //ofDrawBitmapStringHighlight("SELECT IMAGE:", 0, posTxt + il * i++, ofColor::black, ofColor::white);
+            //ofDrawBitmapStringHighlight("FROM /images: [01234567][QWE][ASD][ZXC]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
+            i++;
+            ofDrawBitmapStringHighlight("SELECT IMAGE FROM /images/drag: [UP-DOWN]", 0, posTxt + il * i++, ofColor::black, ofColor::white);
             ofDrawBitmapStringHighlight("drag images into window (/images/drag)", 0, posTxt + il * i++, ofColor::black, ofColor::white);
 
             ofSetColor(255);
@@ -158,15 +186,15 @@ void ofxColorQuantizerHelper::draw()
             ofPopStyle();
         }
 
-            // MINI MODE
+            // 2. MINI MODE user window
         else
         {
-            if (bottomMode)
+            if (bottomMode)//put preview in the bottom window
             {
                 //ignore y position and put at the window bottom
                 int x = position.x;//x pad for left/right window
                 //int y = position.y;
-                int pad = 2;
+                int pad = 0;
                 boxPad = 0;//pad between boxes
 
                 ofPushMatrix();
@@ -175,13 +203,20 @@ void ofxColorQuantizerHelper::draw()
                 ofTranslate(x, 0);
                 ofSetColor(255);
 
-                // draw original image but resized to ImgW pixels width, same aspect ratio
+                // 1. draw original image but resized to ImgW pixels width, same aspect ratio
                 float imgRatio = image.getHeight() / image.getWidth();
-                int ImgW = 200;
-                int imgH = imgRatio * ImgW;
+
+                //// 1. fixed width
+                //int ImgW = 200;
+                //int imgH = imgRatio * ImgW;
+
+                // 2. fixed height
+                int imgH = 125;
+                int ImgW = imgH / imgRatio;
+
                 image.draw(0, ofGetHeight() - (imgH + pad), ImgW, imgH);
 
-                //image border
+                // 2. image border
                 if (bUseBorder)
                 {
                     ofRectangle r;
@@ -191,11 +226,20 @@ void ofxColorQuantizerHelper::draw()
                     ofDrawRectangle(r);
                 }
 
-                // palette position
+                // 3. palette position
                 ofTranslate(ImgW + pad, 0);
+
+                //// resize box sizes
+                //wPal = size.x - (pad + ImgW + pad);
+                //boxW = wPal / colorQuantizer.getNumColors();
+                //boxSize = boxW - boxPad;
+                //boxSize_h = imgH;
+
                 // resize box sizes
-                wPal = size.x - (pad + ImgW + pad);
-                boxW = wPal / colorQuantizer.getNumColors();
+                // panel size is ignored
+                //wPal = size.x - (pad + ImgW + pad);
+                wPal = ofGetWidth() - ImgW;
+                boxW = (float) wPal / colorQuantizer.getNumColors();
                 boxSize = boxW - boxPad;
                 boxSize_h = imgH;
 
@@ -210,7 +254,7 @@ void ofxColorQuantizerHelper::draw()
             {
                 int x = position.x;//x pad for left/right window
                 int y = position.y;
-                int pad = 5;
+                int pad = 0;
                 boxPad = 0;//pad between boxes
 
                 ofPushMatrix();
@@ -318,7 +362,7 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter &e)
 {
     string WIDGET_name = e.getName();
 
-    ofLogNotice() << "Changed_parameters: " << WIDGET_name << ": " << e;
+    ofLogNotice("ofxColorQuantizerHelper") << "Changed_parameters: " << WIDGET_name << ": " << e;
 
     if (WIDGET_name == "sort type")
     {
@@ -519,9 +563,10 @@ void ofxColorQuantizerHelper::draw_Palette_Preview()
 
     for (int col = 0; col < palette.size(); col++)
     {
-        ofFill();
         ofSetColor(colorMapSortable[col].color);
         //ofSetColor(palette[col]);
+
+        ofFill();
         ofDrawRectangle(r);
 
         if (bUseBorder)
@@ -607,6 +652,7 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
 
     if (key == OF_KEY_UP)
     {
+        // refresh dir
         dir.listDir(pathFolerDrag);
         dir.allowExt("jpg");
         dir.allowExt("png");
@@ -615,7 +661,10 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
 
         currentImage--;
         if (currentImage < 0)
-            currentImage = 0;
+            currentImage = dir.size() - 1;
+        //currentImage = 0;
+
+        cout << "currentImage:" << ofToString(currentImage) << endl;
 
         if (dir.size() > 0 && currentImage < dir.size() - 1)
         {
@@ -624,20 +673,24 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
             buildFromImageFile(imageName_path, numColors);
         }
     }
-    if (key == OF_KEY_DOWN)
+    if (key == OF_KEY_DOWN || key == ' ')
     {
+        // refresh dir
         dir.listDir(pathFolerDrag);
         dir.allowExt("jpg");
         dir.allowExt("png");
         dir.sort();
         currentImage.setMax(dir.size() - 1);
 
-        if (currentImage < dir.size() - 1)
-            currentImage++;
-        else
-            currentImage = dir.size() - 1;
+        currentImage++;
+        if (currentImage > dir.size() - 1)
+            currentImage = 0;
 
-        if (dir.size() > 0 && currentImage < dir.size() - 1)
+        //currentImage = dir.size() - 1;
+
+        cout << "currentImage:" << ofToString(currentImage) << endl;
+
+        if (dir.size() > 0 && currentImage < dir.size())
         {
             imageName = dir.getName(currentImage);
             imageName_path = dir.getPath(currentImage);
@@ -845,7 +898,7 @@ void ofxColorQuantizerHelper::mouseDragged(ofMouseEventArgs &eventArgs)
     const int &x = eventArgs.x;
     const int &y = eventArgs.y;
     const int &button = eventArgs.button;
-    ofLogNotice("ofxColorQuantizerHelper") << "mouseDragged " << x << ", " << y << ", " << button;
+    //ofLogNotice("ofxColorQuantizerHelper") << "mouseDragged " << x << ", " << y << ", " << button;
 }
 
 //--------------------------------------------------------------
@@ -854,7 +907,7 @@ void ofxColorQuantizerHelper::mousePressed(ofMouseEventArgs &eventArgs)
     const int &x = eventArgs.x;
     const int &y = eventArgs.y;
     const int &button = eventArgs.button;
-    ofLogNotice("ofxColorQuantizerHelper") << "mousePressed " << x << ", " << y << ", " << button;
+    //ofLogNotice("ofxColorQuantizerHelper") << "mousePressed " << x << ", " << y << ", " << button;
 }
 
 //--------------------------------------------------------------
@@ -863,7 +916,7 @@ void ofxColorQuantizerHelper::mouseReleased(ofMouseEventArgs &eventArgs)
     const int &x = eventArgs.x;
     const int &y = eventArgs.y;
     const int &button = eventArgs.button;
-    ofLogNotice("ofxColorQuantizerHelper") << "mouseReleased " << x << ", " << y << ", " << button;
+    //ofLogNotice("ofxColorQuantizerHelper") << "mouseReleased " << x << ", " << y << ", " << button;
 }
 
 //--------------------------------------------------------------
@@ -911,12 +964,17 @@ void ofxColorQuantizerHelper::dragEvent(ofDragInfo &eventArgs)
             ofLogNotice("ofxColorQuantizerHelper") << "draggedImages: " << info.files[k];
             draggedImages[k].load(info.files[k]);
 
-            //// create palette from file
-            //imageName_path = info.files[k];
-            //buildFromImageFile(imageName_path, numColors);
+            // save dragged files to data folder
 
-            // save dragged file to data folder
-            string fileName = "img_" + ofToString(ofGetTimestampString() + ".png");
+            // 1. use timestamped name
+            //string fileName = "img_" + ofToString(ofGetTimestampString() + ".png");
+            //draggedImages[k].save(pathFolerDrag + fileName);
+
+            // 2. use original file name
+            auto strs = ofSplitString(info.files[k], "/");
+            //cout << "strs: " << ofToString(strs) << endl;
+            string fileName = strs[strs.size() - 1];
+            //cout << "filename: " << fileName << endl;
             draggedImages[k].save(pathFolerDrag + fileName);
         }
 
@@ -924,6 +982,7 @@ void ofxColorQuantizerHelper::dragEvent(ofDragInfo &eventArgs)
         imageName_path = info.files[info.files.size() - 1];
         buildFromImageFile(imageName_path, numColors);
 
+        // refresh dir
         dir.listDir(pathFolerDrag);
         dir.allowExt("jpg");
         dir.allowExt("png");
