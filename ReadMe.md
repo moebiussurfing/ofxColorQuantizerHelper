@@ -10,12 +10,10 @@ Easy to include ofxColorQuantizer in your app project.
 ## Dependencies
 
 - ofxColorQuantizer
-
 - my fork of ofxColorQuantizerHelper:
+
 https://github.com/moebiussurfing/ofxColorQuantizer
-
 - ofxGui
-
 - ofxOpenCv
 
 ## Screenshot
