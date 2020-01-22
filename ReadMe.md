@@ -9,4 +9,4 @@ ofxOpenCv
 
 ## Screenshot
 
-![Alt text](/screenshot.jpg?raw=true "MoebiusSurfing")
+![Alt text](/screenshot.JPG?raw=true "MoebiusSurfing")
