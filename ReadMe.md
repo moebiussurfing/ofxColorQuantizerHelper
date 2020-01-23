@@ -16,3 +16,8 @@ Easy to include ofxColorQuantizer in your app project.
 ## Screenshot
 
 ![Alt text](/screenshot.JPG?raw=true "MoebiusSurfing")
+
+## Tested
+
+- Windows / VS2017 / OF 0.11.0
+- macOS / High Sierra/ Xcode / OF 0.11.0
