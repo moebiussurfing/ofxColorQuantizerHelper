@@ -124,6 +124,9 @@ void ofxColorQuantizerHelper::setup()
 	parameters.add(currentImage.set("File ", 0, 0, dir.size() - 1));
 	parameters.add(currentImage_name.set("", ""));
 	parameters.add(bReBuild.set("Build", false));
+	parameters.add(bVisible.set("GUI", true));
+	parameters.add(bInfo.set("Info", false));
+	parameters.add(bottomMode.set("Bottom", false));
 
 	currentImage_name.setSerializable(false);
 
@@ -161,7 +164,7 @@ void ofxColorQuantizerHelper::setup()
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::draw()
 {
-	if (isLoadedImage && bVisible)
+	if (isLoadedImage && bVisible && bInfo)
 	{
 		// 1. debug big window
 		if (!ENABLE_minimal)
@@ -220,6 +223,7 @@ void ofxColorQuantizerHelper::draw()
 			// draw original image but resized to ImgW pixels width, same aspect ratio
 			float imgRatio = image.getHeight() / image.getWidth();
 			int imgH = imgRatio * ImgW;
+
 			image.draw(0, 0, ImgW, imgH);
 
 			//-

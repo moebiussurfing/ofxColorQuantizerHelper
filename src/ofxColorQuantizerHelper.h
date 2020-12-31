@@ -37,7 +37,9 @@ public:
 		}
 	}
 	
-	bool bVisible = true;
+	ofParameter<bool> bInfo;
+	ofParameter<bool> bVisible;
+
 	void setVisible(bool b)
 	{
 		bVisible = b;
@@ -99,7 +101,7 @@ public:
 
 private:
 
-	bool bottomMode = false;
+	ofParameter<bool> bottomMode;
 
 public:
 
@@ -172,6 +174,10 @@ private:
 
 	ofxColorQuantizer colorQuantizer;
 	void quantizeImage(string imageName, int numColors);
+
+	ofImage &getImage() {
+		return image;
+	}
 
 	ofImage image;
 	ofImage imageCopy;
