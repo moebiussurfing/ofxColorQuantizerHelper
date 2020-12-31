@@ -1,0 +1,5 @@
+ofxGui
+ofxOpenCv
+ofxColorQuantizer
+ofxColorQuantizerHelper
+ofxSurfingHelpers

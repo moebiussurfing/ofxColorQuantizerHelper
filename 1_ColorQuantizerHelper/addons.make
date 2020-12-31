@@ -1,4 +1,0 @@
-ofxColorQuantizer
-ofxColorQuantizerHelper
-ofxGui
-ofxOpenCv
