@@ -17,6 +17,45 @@ class ofxColorQuantizerHelper
 {
 
 public:
+	int getPaletteSize() {
+		return palette.size();
+	}
+	std::string getImagePath() {
+		return imageName_path;
+	}
+	void loadNext();
+	void loadPrev();
+	//easy callback
+	bool bUpdate = false;
+	bool isUpdated() {
+		if (bUpdate) {
+			bUpdate = false;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	bool bVisible = true;
+	void setVisible(bool b)
+	{
+		bVisible = b;
+	}
+	void setToggleVisible()
+	{
+		bVisible = !bVisible;
+	}
+	
+	//build palette from already quantized and sorted colors
+	//void rebuildMap();
+	ofParameterGroup getParameters() {
+		return parameters;
+	}
+
+	//-
+
+public:
 	ofxColorQuantizerHelper();
 	~ofxColorQuantizerHelper();
 
@@ -43,7 +82,7 @@ public:
 	void setActive(bool b)
 	{
 		isActive = b;
-		isVisible_gui = b;
+		//isVisible_gui = b;
 		if (b)
 		{
 			addKeysListeners();
@@ -107,7 +146,7 @@ public:
 
 private:
 	//build palette from already quantized and sorted colors
-	void map_setup();
+	void rebuildMap();
 
 private:
 

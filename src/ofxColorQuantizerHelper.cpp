@@ -26,6 +26,49 @@ bool compareSaturation(const colorMapping &s1, const colorMapping &s2)
 }
 
 //--------------------------------------------------------------
+void ofxColorQuantizerHelper::loadPrev()
+{
+	// refresh dir
+	dir.listDir(pathFolerDrag);
+	dir.allowExt("jpg");
+	dir.allowExt("png");
+	dir.sort();
+	currentImage.setMax(dir.size() - 1);
+	currentImage--;
+	if (currentImage < 0) currentImage = dir.size() - 1;
+	//currentImage = 0;
+	ofLogNotice(__FUNCTION__) << "currentImage:" << ofToString(currentImage);
+	if (dir.size() > 0 && currentImage < dir.size() - 1)
+	{
+		imageName = dir.getName(currentImage);
+		imageName_path = dir.getPath(currentImage);
+		buildFromImageFile(imageName_path, numColors);
+	}
+}
+
+//--------------------------------------------------------------
+void ofxColorQuantizerHelper::loadNext()
+{
+	// refresh dir
+	dir.listDir(pathFolerDrag);
+	dir.allowExt("jpg");
+	dir.allowExt("png");
+	dir.sort();
+	currentImage.setMax(dir.size() - 1);
+	currentImage++;
+	if (currentImage > dir.size() - 1)
+		currentImage = 0;
+	//currentImage = dir.size() - 1;
+	ofLogNotice(__FUNCTION__) << "currentImage:" << ofToString(currentImage);
+	if (dir.size() > 0 && currentImage < dir.size())
+	{
+		imageName = dir.getName(currentImage);
+		imageName_path = dir.getPath(currentImage);
+		buildFromImageFile(imageName_path, numColors);
+	}
+}
+
+//--------------------------------------------------------------
 void ofxColorQuantizerHelper::filesRefresh()
 {
 	// load dragged images folder
@@ -95,7 +138,7 @@ void ofxColorQuantizerHelper::setup()
 
 	// STARTUP SETTINGS
 
-	XML_params.setName(__FUNCTION__);
+	XML_params.setName("ofxColorQuantizerHelper");
 	XML_params.add(ENABLE_minimal);
 	XML_params.add(numColors);
 	XML_params.add(sortedType);
@@ -118,7 +161,7 @@ void ofxColorQuantizerHelper::setup()
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::draw()
 {
-	if (isLoadedImage)
+	if (isLoadedImage && bVisible)
 	{
 		// 1. debug big window
 		if (!ENABLE_minimal)
@@ -340,7 +383,7 @@ void ofxColorQuantizerHelper::draw()
 
 	//-
 
-	if (isVisible_gui && !ENABLE_minimal) gui.draw();
+	if (/*isVisible_gui &&*/ !ENABLE_minimal && bVisible) gui.draw();
 }
 
 //--------------------------------------------------------------
@@ -367,7 +410,7 @@ void ofxColorQuantizerHelper::build()
 
 		//--
 
-		map_setup();
+		rebuildMap();
 	}
 }
 
@@ -503,7 +546,7 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter &e)
 
 
 //--------------------------------------------------------------
-void ofxColorQuantizerHelper::map_setup()
+void ofxColorQuantizerHelper::rebuildMap()
 {
 	palette.clear();
 	int palSize = colorQuantizer.getNumColors();
@@ -703,6 +746,8 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
 		if (numColors < numColors.getMin())
 			numColors = numColors.getMin();
 		bReBuild = true;
+
+		//if (numColors < numColors.getMin()) numColors = numColors.getMin();
 	}
 	if (key == OF_KEY_RIGHT)
 	{
@@ -710,21 +755,28 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
 		if (numColors > numColors.getMax())
 			numColors = numColors.getMax();
 		bReBuild = true;
+
+		// if (numColors > numColors.getMax()) numColors = numColors.getMax();
 	}
 
 	if (key == OF_KEY_UP)
 	{
-		currentImage--;
-		if (currentImage < 0)
-			currentImage = dir.size() - 1;
-		//currentImage = 0;
+		//currentImage--;
+		//if (currentImage < 0)
+		//	currentImage = dir.size() - 1;
+		////currentImage = 0;
+
+		loadPrev();
 	}
 	if (key == OF_KEY_DOWN || key == ' ')
 	{
-		currentImage++;
-		if (currentImage > dir.size() - 1)
-			currentImage = 0;
+		//currentImage++;
+		//if (currentImage > dir.size() - 1)
+		//	currentImage = 0;
+
 		//currentImage = dir.size() - 1;
+
+		loadNext();
 	}
 
 	//-
