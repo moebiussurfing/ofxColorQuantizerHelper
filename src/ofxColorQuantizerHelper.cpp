@@ -409,6 +409,10 @@ void ofxColorQuantizerHelper::setup()
 	font.load("assets/fonts/telegrama_render.otf", 11, true, true);
 	//font.load("assets/fonts/LCD_Solid.ttf", 11, true, true);
 	//font.load("assets/fonts/overpass-mono-bold.otf", 9, true, true);
+	
+	//-
+	
+	filesRefresh();
 
 	//----
 
@@ -425,21 +429,17 @@ void ofxColorQuantizerHelper::setup()
 
 	//-
 
-	filesRefresh();
-
-	//-
-
 	infoHelp = "QUANTIZER INFO\n\n";
-	infoHelp += "H                HELP";
+	infoHelp += "H                   HELP";
 	infoHelp += "\n";
-	infoHelp += "+|-              AMOUNT COLORS";
+	infoHelp += "   +|-              AMOUNT COLORS";
 	infoHelp += "\n";
-	infoHelp += "Left|Right       BROWSE IMAGES";
+	infoHelp += "Left|Right          BROWSE IMAGES";
 	infoHelp += "\n";
-	infoHelp += "Up|Down          SORT TYPE";
+	infoHelp += "  Up|Down           SORT TYPE";
 	infoHelp += "\n";
 	//infoHelp += "Path/Url         " + currentImage_name.get();
-	//infoHelp += "\n";
+	infoHelp += "\n";
 	infoHelp += "Drag images here!";
 }
 
