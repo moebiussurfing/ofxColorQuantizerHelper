@@ -1,6 +1,6 @@
 #pragma once
-
 #include "ofMain.h"
+
 #include "ofxOpenCv.h"
 #include "ofxColorQuantizer.h"
 #include "ofxGui.h"
@@ -25,8 +25,10 @@ public:
 	}
 	void loadNext();
 	void loadPrev();
+private:
 	//easy callback
 	bool bUpdate = false;
+public:
 	bool isUpdated() {
 		if (bUpdate) {
 			bUpdate = false;
@@ -36,19 +38,24 @@ public:
 			return false;
 		}
 	}
-	
-	ofParameter<bool> bInfo;
-	ofParameter<bool> bVisible;
 
+private:
+	ofParameter<bool> bInfo;
+	ofParameter<bool> bGuiVisible;
+
+public:
+	std::string infoHelp;//key commands
+
+public:
 	void setVisible(bool b)
 	{
-		bVisible = b;
+		bGuiVisible = b;
 	}
 	void setToggleVisible()
 	{
-		bVisible = !bVisible;
+		bGuiVisible = !bGuiVisible;
 	}
-	
+
 	//build palette from already quantized and sorted colors
 	//void rebuildMap();
 	ofParameterGroup getParameters() {
@@ -112,7 +119,7 @@ public:
 
 	void setMinimal(bool b)
 	{
-		ENABLE_minimal = b;
+		ENABLE_HelpInfo = b;
 	}
 
 	glm::vec2 getPosition()
@@ -132,15 +139,29 @@ public:
 		size = s;
 	}
 
-	vector<ofColor> getPalette()
+	//--
+
+	//TODO:
+	vector<ofColor> getPalette(bool sorted = false)
 	{
-		return palette;
+		if (!sorted) return palette;
+
+		else
+		{
+			vector<ofColor> _palette;
+			for (int col = 0; col < palette.size(); col++)
+			{
+				_palette.push_back(colorMapSortable[col].color);
+			}
+
+			return _palette;
+		}
 	}
 
 	//--
 
 	// pointers back to 'communicate externally'
-	void setPalette_BACK_Name(string &n);
+	void setPalette_BACK_Name(std::string &n);
 	void setPalette_BACK(vector<ofColor> &p);
 	void setPalette_BACK_RefreshPalette(bool &b);
 	void setColor_BACK(ofColor &c);
@@ -157,7 +178,7 @@ private:
 	// pointers back to 'communicate externally'
 	ofColor *myColor_BACK;
 	vector<ofColor> *myPalette_BACK;
-	string *myPalette_Name_BACK;
+	std::string *myPalette_Name_BACK;
 	bool *bUpdated_Palette_BACK;
 	bool *bUpdated_Color_BACK;
 
@@ -165,24 +186,30 @@ private:
 
 	bool bUseBorder = true;
 
-	glm::vec2 position = glm::vec2(10, 10);
+	glm::vec2 position = glm::vec2(0, 0);
 	glm::vec2 size = glm::vec2(1440, 900);
 
-	string pathFolder = "images/";
+	std::string pathFolder = "images/";
 	bool isLoadedImage = false;
 	bool isVisible_gui = true;
 
 	ofxColorQuantizer colorQuantizer;
-	void quantizeImage(string imageName, int numColors);
+	void quantizeImage(std::string imageName, int numColors);
+
+public:
+	int getAountFiles() {
+		return dir.size();
+	}
 
 	ofImage &getImage() {
 		return image;
 	}
 
+private:
 	ofImage image;
 	ofImage imageCopy;
-	string imageName_path;
-	string imageName;
+	std::string imageName_path;
+	std::string imageName;
 
 	struct weightedColor
 	{
@@ -205,21 +232,30 @@ private:
 
 	//-
 
-	void buildFromImageFile(string path, int num);
-	void buildFromImageUrl(string url, int num);
+	void buildFromImageFile(std::string path, int num);
+	void buildFromImageUrl(std::string url, int num);
 
 	map<int, ofColor> colorMap;
 	vector<colorMapping> colorMapSortable;
 
 	//-
 
+private:
 	ofxPanel gui;
+
+public:
 	ofParameter<int> sortedType;
 	ofParameter<int> numColors;
-	ofParameter<string> labelStr;
-	ofParameter<string> labelUrlStr;
+	ofParameter<std::string> sortedType_name;
+	ofParameter<std::string> labelUrlStr;
 	ofParameter<bool> bReBuild;
+	ofParameter<int> currentImage;
+	ofParameter<bool> ENABLE_Keys;
+
+private:
 	ofParameterGroup parameters;
+	ofParameterGroup parameters_Advanced;
+	
 	void Changed_parameters(ofAbstractParameter &e);
 
 	// main palette
@@ -237,18 +273,20 @@ private:
 	vector<ofImage> draggedImages;
 	ofPoint dragPt;
 	void draw_imageDragged();
-	ofParameter<int> currentImage;
-	ofParameter<string> currentImage_name;
-	//string pathFolerDrag = "";
-	string pathFolerDrag = "images/";
+	ofParameter<std::string> currentImage_name;
+	//std::string pathFolerDrag = "";
+	std::string pathFolerDrag = "images/";
 	ofDirectory dir;
 
-	ofParameter<bool> ENABLE_minimal{ "MINIMAL", false };
+public:
+	ofParameter<bool> ENABLE_HelpInfo;// { "HELP INFO", false };
 
+public:
 	void dragEvent(ofDragInfo &eventArgs);
 	void addDragListeners();
 	void removeDragListeners();
 
+private:
 	void keyPressed(ofKeyEventArgs &eventArgs);
 	void keyReleased(ofKeyEventArgs &eventArgs);
 	void addKeysListeners();
@@ -263,8 +301,8 @@ private:
 	bool isActive = true;
 
 	// APP SETTINGS XML
-	void XML_save_AppSettings(ofParameterGroup &g, string path);
-	void XML_load_AppSettings(ofParameterGroup &g, string path);
+	void XML_save_AppSettings(ofParameterGroup &g, std::string path);
+	void XML_load_AppSettings(ofParameterGroup &g, std::string path);
 	ofParameterGroup XML_params;
-	string XML_path = "ofxColorQuantizerHelper/ofxColorQuantizerHelper_Settings.xml";
+	std::string XML_path = "ofxColorQuantizerHelper/ofxColorQuantizerHelper_Settings.xml";
 };
