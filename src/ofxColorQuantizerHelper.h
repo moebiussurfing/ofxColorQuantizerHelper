@@ -1,9 +1,25 @@
 #pragma once
 #include "ofMain.h"
 
+//-
+
+// OPTIONAL
+//#define USE_OFX_GUI__QUANTIZER // comment to disable internal gui
+#define USE_IM_GUI__QUANTIZER
+
+//-
+
+#ifdef USE_OFX_GUI__QUANTIZER
+#include "ofxGui.h"
+#endif
+
+#ifdef USE_IM_GUI__QUANTIZER
+#include "ofxImGui.h"
+#include "ofxSurfing_ImGui.h"
+#endif
+
 #include "ofxOpenCv.h"
 #include "ofxColorQuantizer.h"
-#include "ofxGui.h"
 #include "ofxSurfingHelpers.h"
 #include "ofxSurfing_ofxGui.h"
 
@@ -15,6 +31,18 @@ typedef struct
 
 class ofxColorQuantizerHelper
 {
+	//-
+
+public:
+	void gui_Quantizer();
+	ofTexture tex;
+	ofFbo fbo;
+	void quantizerRefreshImage();
+	ofxImGui::Settings mainSettings = ofxImGui::Settings();
+#define BUTTON_BIG_HEIGHT 50
+#define NUM_QUANTIZER_COLORS_PER_ROW 4
+
+	//-
 
 public:
 	int getPaletteSize() {
@@ -23,11 +51,14 @@ public:
 	std::string getImagePath() {
 		return imageName_path;
 	}
+
 	void loadNext();
 	void loadPrev();
+
 private:
 	//easy callback
 	bool bUpdate = false;
+
 public:
 	bool isUpdated() {
 		if (bUpdate) {
@@ -41,11 +72,16 @@ public:
 
 private:
 	ofParameter<bool> bInfo;
+	
+#ifdef USE_OFX_GUI__QUANTIZER
 	ofParameter<bool> bGuiVisible;
+#endif
 
 public:
 	std::string infoHelp;//key commands
 
+	
+#ifdef USE_OFX_GUI__QUANTIZER
 public:
 	void setVisible(bool b)
 	{
@@ -55,9 +91,11 @@ public:
 	{
 		bGuiVisible = !bGuiVisible;
 	}
+#endif
 
 	//build palette from already quantized and sorted colors
 	//void rebuildMap();
+
 	ofParameterGroup getParameters() {
 		return parameters;
 	}
@@ -92,6 +130,7 @@ public:
 	{
 		isActive = b;
 		//isVisible_gui = b;
+
 		if (b)
 		{
 			addKeysListeners();
@@ -117,7 +156,7 @@ public:
 		bottomMode = b;
 	}
 
-	void setMinimal(bool b)
+	void setEnableVisibleHelpInfo(bool b)
 	{
 		ENABLE_HelpInfo = b;
 	}
@@ -240,8 +279,10 @@ private:
 
 	//-
 
+#ifdef USE_OFX_GUI__QUANTIZER
 private:
 	ofxPanel gui;
+#endif
 
 public:
 	ofParameter<int> sortedType;
@@ -261,7 +302,7 @@ private:
 	// main palette
 	vector<ofColor> palette;
 
-	float boxSize;
+	float boxBgSize;
 	int boxSize_h;
 	int boxPad;
 	float boxW;
