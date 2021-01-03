@@ -6,6 +6,7 @@
 // OPTIONAL
 //#define USE_OFX_GUI__QUANTIZER // comment to disable internal gui
 #define USE_IM_GUI__QUANTIZER
+//#define USE_IM_GUI__QUANTIZER_INTERNAL // TODO: to make grid thumbs browser we need the ImGui instance internal.. 
 
 //-
 
@@ -41,6 +42,18 @@ public:
 	ofxImGui::Settings mainSettings = ofxImGui::Settings();
 #define BUTTON_BIG_HEIGHT 50
 #define NUM_QUANTIZER_COLORS_PER_ROW 4
+	
+
+#ifdef USE_IM_GUI__QUANTIZER_INTERNAL
+	//TODO:
+	//grid picker
+	ofParameter<int> colBoxSize;
+	vector<ofTexture> textureSource;
+	vector<GLuint> textureSourceID;
+	ofParameter<std::string> nameMat;
+	ofParameter<int> indexBrowser;
+	int dirLoadIndex;
+#endif
 
 	//-
 

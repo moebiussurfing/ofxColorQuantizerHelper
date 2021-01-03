@@ -158,6 +158,69 @@ void ofxColorQuantizerHelper::gui_Quantizer()
 
 		ofxImGui::AddParameter(ENABLE_Keys);
 		ofxImGui::AddParameter(ENABLE_HelpInfo);
+
+		//----
+
+#ifdef USE_IM_GUI__QUANTIZER_INTERNAL
+		ImGui::Begin("ofxGpuLutCube");
+		{
+			ImVec2 button_sz((float)colBoxSize.get(), (float)colBoxSize.get());
+
+			ImGuiStyle& style = ImGui::GetStyle();
+			int buttons_count = dir.size();
+			float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+
+			for (int n = 0; n < buttons_count; n++)
+			{
+				ImGui::PushID(n);
+				string name = ofToString(n);
+
+				//customize colors
+				if (n == indexBrowser)//when selected
+				{
+					const ImVec4 color1 = ImVec4(0.1, 0.1, 0.1, 0.8);//changes button color to black
+					ImGui::PushStyleColor(ImGuiCol_Button, color1);
+				}
+				else { //not selected
+					const ImVec4 color2 = style.Colors[ImGuiCol_Button];//do not changes the color
+					ImGui::PushStyleColor(ImGuiCol_Button, color2);
+				}
+
+				//-
+
+				//image button
+				if (ImGui::ImageButton(GetImTextureID(textureSourceID[n]), button_sz))
+				{
+					ofLogNotice(__FUNCTION__) << "[ " + ofToString(n) + " ] THUMB : " + dir.getName(n);
+
+					indexBrowser = n;
+
+					nameMat = dir.getName(indexBrowser);
+
+					//string str = "[" + ofToString(indexBrowser) + "] " + getName();
+					//nameMat = getName();
+
+					dirLoadIndex = indexBrowser;
+					dirLoadIndex = (int)ofClamp(dirLoadIndex, 0, dir.size() - 1);
+					//loadLUT(dir.getPath(dirLoadIndex));
+
+					////apply
+					//applyLUT(sourceImg.getPixels());
+				}
+
+				//-
+
+				//customize colors
+				ImGui::PopStyleColor();
+
+				float last_button_x2 = ImGui::GetItemRectMax().x;
+				float next_button_x2 = last_button_x2 + style.ItemSpacing.x + button_sz.x; // Expected position if next button was on same line
+				if (n + 1 < buttons_count && next_button_x2 < window_visible_x2) ImGui::SameLine();
+				ImGui::PopID();
+			}
+		}
+		ImGui::End();
+#endif
 	}
 	ofxImGui::EndWindow(mainSettings);
 }
@@ -237,6 +300,7 @@ void ofxColorQuantizerHelper::filesRefresh()
 {
 	// load dragged images folder
 	ofLogNotice(__FUNCTION__) << "list files " << pathFolerDrag;
+
 	dir.listDir(pathFolerDrag);
 	dir.allowExt("jpg");
 	dir.allowExt("png");
@@ -244,7 +308,7 @@ void ofxColorQuantizerHelper::filesRefresh()
 	dir.allowExt("PNG");
 	dir.sort();
 
-	// STARTUP QUANTIZER COLOR
+	// startup quantizer color
 	//imageName_path = "0.jpg";
 	//imageName = "0";
 	//buildFromImageFile(pathFolder + imageName_path, numColors);
@@ -267,6 +331,20 @@ void ofxColorQuantizerHelper::filesRefresh()
 	}
 
 	currentImage.setMax(dir.size() - 1);
+
+	//--
+
+#ifdef USE_IM_GUI__QUANTIZER_INTERNAL
+	//TODO:
+	//grid picker
+	textureSource.clear();
+	textureSource.resize(dir.size());
+	textureSourceID.clear();
+	textureSourceID.resize(dir.size());
+	for (int i = 0; i < dir.size(); i++) {
+		textureSourceID[i] = gui_ImGui.loadTexture(textureSource[i], dir.getPath(i));
+	}
+#endif
 }
 
 //--------------------------------------------------------------
@@ -280,7 +358,15 @@ void ofxColorQuantizerHelper::setup()
 
 	//-
 
+#ifdef USE_OFX_GUI__QUANTIZER
 	ofxSurfingHelpers::setThemeDark_ofxGui();
+#endif
+
+#ifdef USE_IM_GUI__QUANTIZER_INTERNAL
+	colBoxSize.set("THUMB SIZE", 100, 40, 300);
+	indexBrowser.set("LUT THUMB Index", -1, 0, 1);
+	nameMat.set("LUT name", "");
+#endif
 
 	//--
 
@@ -320,7 +406,8 @@ void ofxColorQuantizerHelper::setup()
 
 	//-
 
-	font.load("assets/fonts/LCD_Solid.ttf", 11, true, true);
+	font.load("assets/fonts/telegrama_render.otf", 11, true, true);
+	//font.load("assets/fonts/LCD_Solid.ttf", 11, true, true);
 	//font.load("assets/fonts/overpass-mono-bold.otf", 9, true, true);
 
 	//----
@@ -342,18 +429,18 @@ void ofxColorQuantizerHelper::setup()
 
 	//-
 
-	infoHelp = "ColorQuantizer\n\n";
+	infoHelp = "QUANTIZER INFO\n\n";
 	infoHelp += "H                HELP";
 	infoHelp += "\n";
 	infoHelp += "+|-              AMOUNT COLORS";
 	infoHelp += "\n";
 	infoHelp += "Left|Right       BROWSE IMAGES";
 	infoHelp += "\n";
-	infoHelp += "Up|Down          CHANGE SORT TYPE";
+	infoHelp += "Up|Down          SORT TYPE";
 	infoHelp += "\n";
-	infoHelp += "Path/Url         " + currentImage_name.get();
-	infoHelp += "\n";
-	infoHelp += "Drag images into the Window !";
+	//infoHelp += "Path/Url         " + currentImage_name.get();
+	//infoHelp += "\n";
+	infoHelp += "Drag images here!";
 }
 
 ////--------------------------------------------------------------
@@ -428,10 +515,10 @@ void ofxColorQuantizerHelper::draw()
 				{
 					ofSetColor(0, 50);
 					ofDrawRectangle(i * (boxBgSize + boxPad), 0, boxBgSize, -imgH);
-					
+
 					ofSetColor(sortedColors[i].color);
 					ofDrawRectangle(i * (boxBgSize + boxPad), 0, boxBgSize, ofMap(sortedColors[i].weight, 0, 1, 0, -imgH));
-					
+
 					ofSetColor(255);
 					ofDrawBitmapString(ofToString(int(sortedColors[i].weight * 100)) + "%", i * (boxBgSize + boxPad), 15);
 				}
@@ -653,10 +740,12 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter &e)
 
 	ofLogNotice(__FUNCTION__) << _name << " : " << e;
 
-	if (_name == "Sort Type")
+	if (_name == sortedType.getName())
 	{
 		//sortedType = ofClamp(sortedType, 1, 4);
 		if (sortedType < 1 && sortedType > 4) return;
+
+		//-
 
 		switch (sortedType)
 		{
@@ -720,7 +809,7 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter &e)
 		ofLogNotice() << "type url: " << imageName_path;
 		ofLogNotice() << "type url: " << imageName_path;
 	}
-	else if (_name == "BUILD")
+	else if (_name == bReBuild.getName())
 	{
 		if (bReBuild)
 		{
