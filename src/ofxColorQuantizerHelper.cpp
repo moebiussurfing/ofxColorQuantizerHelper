@@ -72,7 +72,10 @@ void ofxColorQuantizerHelper::gui_Quantizer()
 		ofxSurfingHelpers::AddBigButton(bReBuild, _w, _h);
 		ImGui::Dummy(ImVec2(0.0f, 5));
 
-		ImGui::InputInt(numColors.getName().c_str(), (int *)&numColors.get());
+		if (ImGui::InputInt(numColors.getName().c_str(), (int *)&numColors.get())) {
+			numColors = ofClamp(numColors, numColors.getMin(), numColors.getMax());
+		}
+
 		if (ImGui::InputInt(sortedType.getName().c_str(), (int *)&sortedType.get())) {
 			sortedType = ofClamp(sortedType, 1, 4);
 		}
@@ -153,6 +156,8 @@ void ofxColorQuantizerHelper::gui_Quantizer()
 				ofLogNotice(__FUNCTION__) << "Image Pressed";
 			}
 		}
+		ImGui::Text(currentImage_name.get().c_str());
+		ImGui::Dummy(ImVec2(0.0f, 5));
 
 		//-
 
@@ -164,7 +169,7 @@ void ofxColorQuantizerHelper::gui_Quantizer()
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
 		ImGui::Begin("ofxGpuLutCube");
 		{
-			ImVec2 button_sz((float)colBoxSize.get(), (float)colBoxSize.get());
+			ImVec2 button_sz((float)sizeLibColBox.get(), (float)sizeLibColBox.get());
 
 			ImGuiStyle& style = ImGui::GetStyle();
 			int buttons_count = dir.size();
@@ -217,8 +222,8 @@ void ofxColorQuantizerHelper::gui_Quantizer()
 				float next_button_x2 = last_button_x2 + style.ItemSpacing.x + button_sz.x; // Expected position if next button was on same line
 				if (n + 1 < buttons_count && next_button_x2 < window_visible_x2) ImGui::SameLine();
 				ImGui::PopID();
-			}
-		}
+	}
+}
 		ImGui::End();
 #endif
 	}
@@ -353,7 +358,7 @@ void ofxColorQuantizerHelper::setup()
 	//--
 
 	//layout
-	setPosition(glm::vec2(350, 650));
+	setPosition(glm::vec2(370, 650));
 	setSize(glm::vec2(1000, 700));//?
 
 	//-
@@ -363,7 +368,7 @@ void ofxColorQuantizerHelper::setup()
 #endif
 
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
-	colBoxSize.set("THUMB SIZE", 100, 40, 300);
+	sizeLibColBox.set("THUMB SIZE", 100, 40, 300);
 	indexBrowser.set("LUT THUMB Index", -1, 0, 1);
 	nameMat.set("LUT name", "");
 #endif
@@ -409,9 +414,9 @@ void ofxColorQuantizerHelper::setup()
 	font.load("assets/fonts/telegrama_render.otf", 11, true, true);
 	//font.load("assets/fonts/LCD_Solid.ttf", 11, true, true);
 	//font.load("assets/fonts/overpass-mono-bold.otf", 9, true, true);
-	
+
 	//-
-	
+
 	filesRefresh();
 
 	//----
@@ -451,6 +456,8 @@ void ofxColorQuantizerHelper::setup()
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::draw()
 {
+	bool bCenter = true;
+
 	//if (isLoadedImage && bGuiVisible && bInfo)
 	if (ENABLE_HelpInfo)
 	{
@@ -459,42 +466,66 @@ void ofxColorQuantizerHelper::draw()
 		// 1. debug big window
 		//if (!ENABLE_HelpInfo)
 		{
-			//-
-
 			ofPushMatrix();
 			{
-				int x = position.x;//x pad for left/right window
-				int y = position.y;
-				ofTranslate(x, y);
-
 				//-
 
-				//boxPad = 2;//pad between boxes
+				//pad between boxes
+				boxPad = 0;
+				//boxPad = 2;
 				int margin = 5;
 				int space = 40;
 
 				//----
 
-				// 2. image
+				// 1. image
 
 				int imgW = 200;
 				// draw original image but resized to imgW pixels width, same aspect ratio
 				float imgRatio = image.getHeight() / image.getWidth();
 				int imgH = imgRatio * imgW;
-				image.draw(0, 0, imgW, imgH);
 
 				//-
 
-				// 3. resize box sizes
+				// 2. resize box sizes
 
 				wPal = size.x - (margin + imgW + margin);
-
 				boxW = wPal / colorQuantizer.getNumColors();
-
 				boxBgSize = boxW - boxPad;
-
 				boxSize_h = 50;
+
+				//-
+
+				// 3. big bg box
+
 				//boxSize_h = boxBgSize;
+				float _wb = boxBgSize + boxPad;
+				float _ww = colorQuantizer.getNumColors() * boxBgSize;
+
+				//----
+
+				// 4. layout modes
+
+				if (!bCenter) {
+					int x = position.x;//x pad for left/right window
+					int y = position.y;
+					ofTranslate(x, y);
+				}
+				else {
+					int y = position.y;
+					ofTranslate(ofGetWidth() * 0.5 - _ww * 0.5 - imgW, y);
+				}
+
+				// image
+				ofSetColor(255, 255);
+				image.draw(0, 0, imgW, imgH);
+				
+				ofSetColor(255, 100);
+				ofSetLineWidth(1.0);
+				ofNoFill();
+				ofDrawRectangle(0, 0, imgW, imgH);
+
+				//-
 
 				ofTranslate(0, imgH);
 
@@ -511,16 +542,28 @@ void ofxColorQuantizerHelper::draw()
 
 				ofTranslate(imgW + 20, 0);
 
+				//bg box
+				ofSetColor(0, 50);
+				ofFill();
+				ofDrawRectangle(0, 0, _ww, - imgH);
+
+				//bg box border
+				ofSetColor(255, 100);
+				ofSetLineWidth(1.0);
+				ofNoFill();
+				ofDrawRectangle(0, 0, _ww, - imgH);
+
+				//% colors
+				ofFill();
 				for (int i = 0; i < colorQuantizer.getNumColors(); i++)
 				{
-					ofSetColor(0, 50);
-					ofDrawRectangle(i * (boxBgSize + boxPad), 0, boxBgSize, -imgH);
+					//box scaled
+					ofSetColor(sortedColors[i].color, 255);
+					ofDrawRectangle(i * _wb, 0, boxBgSize, ofMap(sortedColors[i].weight, 0, 1, 0, - imgH));
 
-					ofSetColor(sortedColors[i].color);
-					ofDrawRectangle(i * (boxBgSize + boxPad), 0, boxBgSize, ofMap(sortedColors[i].weight, 0, 1, 0, -imgH));
-
-					ofSetColor(255);
-					ofDrawBitmapString(ofToString(int(sortedColors[i].weight * 100)) + "%", i * (boxBgSize + boxPad), 15);
+					//label
+					ofSetColor(255, 255);
+					ofDrawBitmapString(ofToString(int(sortedColors[i].weight * 100)) + "%", i * _wb, 15);
 				}
 
 				//// palette preview
@@ -534,21 +577,16 @@ void ofxColorQuantizerHelper::draw()
 
 			//----
 
-			// 1. debug text
+			// 1. help info
 
 			std::string str = infoHelp;
-
-			//-
-
-			// help info
-
 			ofPushMatrix();
 			{
 				//center box
 				int w = ofxSurfingHelpers::getWidthBBtextBoxed(font, str);
 				int h = ofxSurfingHelpers::getHeightBBtextBoxed(font, str);
 				ofTranslate(ofGetWidth() * 0.5 - w * 0.5, ofGetHeight() * 0.5 - h * 0.5);
-				ofSetColor(255);
+				ofSetColor(255, 255);
 				ofxSurfingHelpers::drawTextBoxed(font, str);
 			}
 			ofPopMatrix();
@@ -839,6 +877,13 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter &e)
 		bUpdate = true;
 
 		quantizerRefreshImage();
+	}
+	else if (_name == numColors.getName())
+	{
+		if (numColors < numColors.getMin() && numColors > numColors.getMax()) return;
+
+		//workflow
+		build();
 	}
 }
 

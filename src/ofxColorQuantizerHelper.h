@@ -47,7 +47,7 @@ public:
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
 	//TODO:
 	//grid picker
-	ofParameter<int> colBoxSize;
+	ofParameter<int> sizeLibColBox;
 	vector<ofTexture> textureSource;
 	vector<GLuint> textureSourceID;
 	ofParameter<std::string> nameMat;
