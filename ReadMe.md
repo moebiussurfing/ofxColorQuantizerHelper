@@ -1,20 +1,22 @@
-This ```openFrameworks``` addon includes a GUI and improves the workflow to integrate **ofxColorQuantizer** coded by @mantissa. 
+**openFrameworks** addon to get the dominant colors of a picture. Helps the integration and workflow of **ofxColorQuantizer** coded by @mantissa. 
 
 ## Screenshot
 ![image](/readme_images/Capture.PNG?raw=true "image")
 
 ## Overview
-* Drag images into window.
+* Drag images into window to get a palette with the dominant colors.
 * Set the desired number of colors.
-* Sort colors by H/S/B or appearance.
+* Different sorting colors: by **H/S/B** or % of appearance.
 
 ## Dependencies
-* ofxColorQuantizer  
-https://github.com/moebiussurfing/ofxColorQuantizer [fork]
 * ofxGui
 * ofxOpenCv
 * ofxSurfingHelpers  
-https://github.com/moebiussurfing/ofxSurfingHelpers
+https://github.com/moebiussurfing/ofxSurfingHelpers  
+
+Already packed into ```/libs```  
+* ofxColorQuantizer  
+https://github.com/moebiussurfing/ofxColorQuantizer [ fork ]
 
 ## Tested systems
 - **Windows10** / **VS2017** / **OF ~0.11**
@@ -22,7 +24,10 @@ https://github.com/moebiussurfing/ofxSurfingHelpers
 
 ## Author
 Addon by **@moebiusSurfing**  
-*(ManuMolina). 2020.*
+*(ManuMolina). 2020.*  
+
+Original code from **@mantissa**. Thanks!  
+https://github.com/mantissa/ofxColorQuantizer  
 
 ## License
 *MIT License.*
