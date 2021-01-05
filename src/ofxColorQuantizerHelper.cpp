@@ -44,8 +44,10 @@ void ofxColorQuantizerHelper::gui_Quantizer()
 		//-
 
 		ImGui::Dummy(ImVec2(0.0f, 10));
+		
+		ImGuiColorEditFlags colorEdiFlags;
 
-		//ImGuiColorEditFlags colorEdiFlags =
+		//colorEdiFlags =
 		//	ImGuiColorEditFlags_NoSmallPreview |
 		//	ImGuiColorEditFlags_NoTooltip |
 		//	ImGuiColorEditFlags_NoLabel |
@@ -56,12 +58,12 @@ void ofxColorQuantizerHelper::gui_Quantizer()
 		//	ImGuiColorEditFlags_NoAlpha |
 		//	ImGuiColorEditFlags_PickerHueWheel;
 
-		ImGuiColorEditFlags colorEdiFlags =
+		colorEdiFlags =
 			ImGuiColorEditFlags_NoAlpha |
 			ImGuiColorEditFlags_NoPicker |
 			ImGuiColorEditFlags_NoTooltip;
 
-		//ImGuiColorEditFlags colorEdiFlags = false;
+		//colorEdiFlags = false;
 
 		//-
 
@@ -173,7 +175,7 @@ void ofxColorQuantizerHelper::gui_Quantizer()
 
 			ImGuiStyle& style = ImGui::GetStyle();
 			int buttons_count = dir.size();
-			float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+			float _wx2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
 			for (int n = 0; n < buttons_count; n++)
 			{
@@ -220,7 +222,7 @@ void ofxColorQuantizerHelper::gui_Quantizer()
 
 				float last_button_x2 = ImGui::GetItemRectMax().x;
 				float next_button_x2 = last_button_x2 + style.ItemSpacing.x + button_sz.x; // Expected position if next button was on same line
-				if (n + 1 < buttons_count && next_button_x2 < window_visible_x2) ImGui::SameLine();
+				if (n + 1 < buttons_count && next_button_x2 < _wx2) ImGui::SameLine();
 				ImGui::PopID();
 	}
 }
@@ -1100,11 +1102,11 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
 			// if (numColors > numColors.getMax()) numColors = numColors.getMax();
 		}
 
-		if (key == OF_KEY_LEFT)
+		if (key == OF_KEY_UP)
 		{
 			loadPrev();
 		}
-		if (key == OF_KEY_RIGHT || key == ' ')
+		if (key == OF_KEY_DOWN || key == ' ')
 		{
 			loadNext();
 		}
@@ -1112,12 +1114,12 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
 		//-
 
 		// sort types
-		if (key == OF_KEY_UP)
+		if (key == OF_KEY_LEFT)
 		{
 			sortedType++;
 			if (sortedType > 4) sortedType = 1;
 		}
-		if (key == OF_KEY_DOWN)
+		if (key == OF_KEY_RIGHT)
 		{
 			sortedType--;
 			if (sortedType < 1) sortedType = 4;
