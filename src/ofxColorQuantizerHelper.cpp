@@ -8,6 +8,7 @@ void ofxColorQuantizerHelper::quantizerRefreshImage()
 	ofLogNotice(__FUNCTION__) << " image path: " << getImagePath();
 
 	bool b = ofGetUsingArbTex();
+
 	ofDisableArbTex();
 	ofLoadImage(tex, getImagePath());
 	fbo.allocate(tex.getWidth(), tex.getHeight());
@@ -15,9 +16,11 @@ void ofxColorQuantizerHelper::quantizerRefreshImage()
 	fbo.createAndAttachTexture(GL_RGBA32F, 1); //velocity
 	fbo.createAndAttachRenderbuffer(GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT);
 	fbo.checkStatus();
+
 	fbo.begin();
 	ofClear(0);
 	fbo.end();
+
 	if (b) ofEnableArbTex();
 
 	fbo.begin();//draw once only
