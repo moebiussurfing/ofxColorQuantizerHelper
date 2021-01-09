@@ -132,7 +132,7 @@ void ofxColorQuantizerHelper::gui_Quantizer()
 				ImVec2(wb, wb)))
 			{
 				//TODO:
-				//lastColorPicked_Palette = n;
+				//last_ColorPicked_Palette = n;
 			}
 
 			// make rows
