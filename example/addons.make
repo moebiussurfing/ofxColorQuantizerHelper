@@ -1,5 +1,4 @@
+ofxColorQuantizerHelper
 ofxGui
 ofxOpenCv
-ofxColorQuantizer
-ofxColorQuantizerHelper
 ofxSurfingHelpers
