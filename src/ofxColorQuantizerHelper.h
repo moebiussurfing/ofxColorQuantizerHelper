@@ -194,7 +194,7 @@ public:
 	//--
 
 	//TODO:
-	vector<ofColor> getPalette(bool sorted = false)
+	vector<ofColor> getPalette(bool sorted = true)
 	{
 		if (!sorted) return palette;
 
