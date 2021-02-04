@@ -34,11 +34,19 @@ class ofxColorQuantizerHelper
 {
 	//-
 
+	//TODO:
+	//thumbs. required multiple ImGui contexts here
+//public:
+//	vector<ofTexture> textureSource;
+//	vector<GLuint> textureSourceID;
+	//void draw_Gui2();
+
+
 public:
-	void gui_Quantizer();
+	void draw_Gui();
 	ofTexture tex;
 	ofFbo fbo;
-	void quantizerRefreshImage();
+	void refresh_QuantizerImage();
 	ofxImGui::Settings mainSettings = ofxImGui::Settings();
 #define BUTTON_BIG_HEIGHT 50
 #define NUM_QUANTIZER_COLORS_PER_ROW 4
@@ -128,7 +136,7 @@ public:
 
 	// API
 private:
-	void filesRefresh();
+	void refresh_Files();
 	ofTrueTypeFont font;
 
 public:
@@ -262,6 +270,7 @@ private:
 	ofImage imageCopy;
 	std::string imageName_path;
 	std::string imageName;
+	vector<std::string> imageNames;
 
 	struct weightedColor
 	{
