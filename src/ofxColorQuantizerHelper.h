@@ -6,9 +6,16 @@
 // OPTIONAL
 //#define USE_OFX_GUI__QUANTIZER // comment to disable internal gui
 #define USE_IM_GUI__QUANTIZER
-//#define USE_IM_GUI__QUANTIZER_INTERNAL // TODO: to make grid thumbs browser we need the ImGui instance internal.. 
+//#define USE_IM_GUI__QUANTIZER_INTERNAL //TODO: to make grid thumbs browser we need the ImGui instance internal.. 
 
 //-
+
+
+#define PANEL_WIDGETS_WIDTH 225
+#define PANEL_WIDGETS_HEIGHT 100
+
+#define BUTTON_BIG_HEIGHT 50
+#define NUM_QUANTIZER_COLORS_PER_ROW 4
 
 #ifdef USE_OFX_GUI__QUANTIZER
 #include "ofxGui.h"
@@ -41,16 +48,17 @@ class ofxColorQuantizerHelper
 //	vector<GLuint> textureSourceID;
 	//void draw_Gui2();
 
+public:
+	ofParameter<bool> SHOW_AdvancedLayout{ "Show Advanced", false };
 
 public:
 	void draw_Gui();
+
+private:
 	ofTexture tex;
 	ofFbo fbo;
 	void refresh_QuantizerImage();
-	ofxImGui::Settings mainSettings = ofxImGui::Settings();
-#define BUTTON_BIG_HEIGHT 50
-#define NUM_QUANTIZER_COLORS_PER_ROW 4
-	
+	ofxImGui::Settings mainSettings = ofxImGui::Settings();	
 
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
 	//TODO:
@@ -75,6 +83,9 @@ public:
 
 	void loadNext();
 	void loadPrev();
+	void randomPalette
+	
+	();
 
 private:
 	//easy callback
@@ -248,6 +259,7 @@ private:
 
 	glm::vec2 position = glm::vec2(0, 0);
 	glm::vec2 size = glm::vec2(1440, 900);
+	bool auto_resize = false;
 
 	std::string pathFolder = "images/";
 	bool isLoadedImage = false;

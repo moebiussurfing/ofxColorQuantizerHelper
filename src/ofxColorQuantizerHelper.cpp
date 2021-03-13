@@ -100,65 +100,28 @@ void ofxColorQuantizerHelper::refresh_QuantizerImage()
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::draw_Gui()
 {
-	if (ofxImGui::BeginWindow("PICTURE", mainSettings, false))
+	auto_resize = true;
+
+	ImGuiWindowFlags flags = auto_resize ? ImGuiWindowFlags_AlwaysAutoResize : ImGuiWindowFlags_None;
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(PANEL_WIDGETS_WIDTH, PANEL_WIDGETS_HEIGHT));
+
+	if (ofxImGui::BeginWindow("PICTURE", mainSettings, flags))
 	{
-		//-
-
-		float _spc = ImGui::GetStyle().ItemInnerSpacing.x;
-		int _w = ImGui::GetWindowContentRegionWidth() - 2 * _spc;
-		//float _w50 = _w * 0.5;
-		float _w50 = (_w * 0.5) - (_spc * 0.5);
-		float _w100 = _w - 2 * _spc;
 		float _h = BUTTON_BIG_HEIGHT;
+		float _spc = ImGui::GetStyle().ItemSpacing.x;
+		float _w100 = ImGui::GetContentRegionAvail().x;
+		float _w99 = _w100 - _spc;
+		float _w50 = _w99 / 2;
 
 		//-
 
-		ImGui::Dummy(ImVec2(0, 10));
+		ImGui::Dummy(ImVec2(0, 5));
 
-		ImGuiColorEditFlags colorEdiFlags;
-
-		colorEdiFlags =
+		ImGuiColorEditFlags colorEdiFlags =
 			ImGuiColorEditFlags_NoAlpha |
 			ImGuiColorEditFlags_NoPicker |
 			ImGuiColorEditFlags_NoTooltip;
-
-		//-
-
-		// gui parameters
-
-		//ofxImGui::AddGroup(colorQuantizer.getParameters(), mainSettings);
-
-		ofxSurfingHelpers::AddBigButton(bReBuild, _w, _h);
-		ImGui::Dummy(ImVec2(0, 5));
-
-		if (ImGui::InputInt(numColors.getName().c_str(), (int *)&numColors.get())) {
-			numColors = ofClamp(numColors, numColors.getMin(), numColors.getMax());
-		}
-
-		ImGui::Dummy(ImVec2(0, 5));
-		std::string s2 = sortedType_name.get();
-		ImGui::Text(s2.c_str());
-
-		if (ImGui::InputInt(sortedType.getName().c_str(), (int *)&sortedType.get())) {
-			sortedType = ofClamp(sortedType, 1, 4);
-		}
-
-		if (ImGui::Button("SORT", ImVec2(_w, _h)))
-		{
-			sortedType++;
-			if (sortedType > 4) sortedType = 1;
-		}
-
-		//ImGui::Dummy(ImVec2(0, 5));
-		//ImGui::InputInt(currentImage.getName().c_str(), (int *)&currentImage.get());
-
-		//-
-
-		//// label name
-		//ImGui::Dummy(ImVec2(0.0f, 5));
-		//ImGui::Text(currentImage_name.get().c_str());
-
-		ImGui::Dummy(ImVec2(0, 5));
 
 		//----
 
@@ -168,7 +131,7 @@ void ofxColorQuantizerHelper::draw_Gui()
 		{
 			int _i = currentImage;
 
-			ImGui::PushItemWidth(_w);
+			ImGui::PushItemWidth(_w99 - 10);
 
 			if (ofxImGui::VectorCombo(" ", &_i, imageNames))
 			{
@@ -192,10 +155,8 @@ void ofxColorQuantizerHelper::draw_Gui()
 
 			ImGui::PopItemWidth();
 		}
-		//ImGui::Dummy(ImVec2(0, 10));
 
 		// index / total
-		//ImGui::Dummy(ImVec2(0, 5));
 		std::string s = ofToString(currentImage.get()) + "/" + ofToString(getAountFiles() - 1);
 		ImGui::Text(s.c_str());
 
@@ -217,65 +178,159 @@ void ofxColorQuantizerHelper::draw_Gui()
 			loadNext();
 		}
 
+		//--
+
+		ImGui::Dummy(ImVec2(0, 5));
+
 		//-
 
-		//const auto p = getPalette();
+		// 1. palette colors
+
 		const auto p = getPalette(true);
 
-		//int wb = (_w / (int)NUM_QUANTIZER_COLORS_PER_ROW) - (2 * _spc);
-		int wb = (ImGui::GetWindowContentRegionWidth() / (int)NUM_QUANTIZER_COLORS_PER_ROW) - (2 * _spc);
+		//// split in rows
+		//int wb = (_w99 / (int)NUM_QUANTIZER_COLORS_PER_ROW) - 2 * _spc;
+
+		// fit width
+		float wb = (_w100 / (int)p.size());// -_spc;
+		float hb = BUTTON_BIG_HEIGHT;
 
 		for (int n = 0; n < p.size(); n++)
 		{
 			ImGui::PushID(n);
 
-			// split in rows
-			if ((n % ((int)NUM_QUANTIZER_COLORS_PER_ROW)) != 0) ImGui::SameLine();
+			//// split in rows
+			//if ((n % ((int)NUM_QUANTIZER_COLORS_PER_ROW)) != 0) ImGui::SameLine();
+			//ImGui::SameLine();
+
+			// fit width
+			ImGui::SameLine(0, 0);
+
+			//-
 
 			// box colors
-
-			if (ImGui::ColorButton("##paletteQuantizer",
-				p[n],
-				colorEdiFlags,
-				ImVec2(wb, wb)))
-			{
-				//TODO:
-				//last_ = n;
-			}
+			if (ImGui::ColorButton("##paletteQuantizer", p[n], colorEdiFlags, ImVec2(wb, hb))) {}
 
 			ImGui::PopID();
 		}
 
+		ImGui::Dummy(ImVec2(0, 5));
+
 		//-
 
-		ImGui::Dummy(ImVec2(0, 10));
-
-		// draw image preview
+		// 2. image preview
 
 		if (tex.isAllocated())
 		{
 			float w = tex.getWidth();
 			float h = tex.getHeight();
 			float ratio = h / w;
+			float ww;
+			float hh;
+
+			ww = _w100 - 20;
+			hh = ww * ratio;
+
+			const float H_MAX = 300;
+
+			if (hh > H_MAX)
+			{
+				ww = H_MAX / ratio;
+			}
+
+
+			//if (w *ratio > 400)
+
+			//float hMax = 400;
+			//if (h > hMax) 
+			//{
+			//	h = hMax;
+			//	w = h / ratio;
+			//	ww = _w50;
+			//}
+			//else
+			//{
+			//	ww = _w99 - 20;//hardcoded pad to avoid flickering bug...
+			//}
 
 			if (ImGui::ImageButton(
-				(ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID, 
-				ImVec2(_w100, _w100 * ratio)))
+				(ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID,
+				ImVec2(ww, ww * ratio)))
 			{
 				ofLogNotice(__FUNCTION__) << "Image Pressed";
 			}
 		}
 
 		//// label name
-		//ImGui::Dummy(ImVec2(0.0f, 5));
+		//ImGui::Dummy(ImVec2(0, 5));
 		//ImGui::Text(currentImage_name.get().c_str());
+
+		//-
 
 		ImGui::Dummy(ImVec2(0, 5));
 
 		//-
 
-		ofxImGui::AddParameter(ENABLE_Keys);
-		ofxImGui::AddParameter(ENABLE_HelpInfo);
+		// gui parameters
+
+		//ofxImGui::AddGroup(colorQuantizer.getParameters(), mainSettings);
+
+		if (ImGui::InputInt(numColors.getName().c_str(), (int *)&numColors.get())) {
+			numColors = ofClamp(numColors, numColors.getMin(), numColors.getMax());
+		}
+
+		ImGui::Dummy(ImVec2(0, 5));
+
+		if (ImGui::Button("SORT", ImVec2(_w100, _h)))
+		{
+			sortedType++;
+			if (sortedType > 4) sortedType = 1;
+		}
+		ImGui::Dummy(ImVec2(0, 2));
+
+		std::string s2 = sortedType_name.get();
+		ImGui::Text(s2.c_str());
+
+		if (ImGui::InputInt(sortedType.getName().c_str(), (int *)&sortedType.get())) {
+			sortedType = ofClamp(sortedType, 1, 4);
+		}
+
+		//ImGui::Dummy(ImVec2(0, 5));
+		//ImGui::InputInt(currentImage.getName().c_str(), (int *)&currentImage.get());
+
+		//-
+
+		//// label name
+		ImGui::Dummy(ImVec2(0, 2));
+		//ImGui::Text(currentImage_name.get().c_str());
+
+		ofxSurfingHelpers::AddBigButton(bReBuild, _w100, _h);
+		if (ImGui::Button("REFRESH FILES", ImVec2(_w100, _h/2))) 
+		{
+			// workflow
+			//to allow add more files on runtime
+			int currentImage_PRE = currentImage;
+			refresh_Files();
+			currentImage = currentImage_PRE;
+			build();
+		
+		}
+
+		ImGui::Dummy(ImVec2(0, 5));
+
+		if (SHOW_AdvancedLayout)
+		{
+			if (ImGui::CollapsingHeader("Advanced"))
+			{
+				ImGui::Dummy(ImVec2(0, 5));
+
+				//-
+
+				ImGui::Checkbox("Auto-resize", &auto_resize);
+				ofxImGui::AddParameter(ENABLE_Keys);
+				ofxImGui::AddParameter(ENABLE_HelpInfo);
+			}
+		}
 
 		//----
 
@@ -335,16 +390,18 @@ void ofxColorQuantizerHelper::draw_Gui()
 				float next_button_x2 = last_button_x2 + style.ItemSpacing.x + button_sz.x; // Expected position if next button was on same line
 				if (n + 1 < buttons_count && next_button_x2 < _wx2) ImGui::SameLine();
 				ImGui::PopID();
-	}
-}
+			}
+		}
 		ImGui::End();
 #endif
 	}
 	ofxImGui::EndWindow(mainSettings);
-}
+
+	ImGui::PopStyleVar();
+		}
 #endif
 
-//--
+//----
 
 // sorting helpers
 
@@ -376,7 +433,7 @@ void ofxColorQuantizerHelper::loadPrev()
 	if (currentImage <= 0) currentImage = dir.size() - 1;
 	else currentImage--;
 
-	ofLogNotice(__FUNCTION__) << "currentImage:" << ofToString(currentImage);
+	ofLogNotice(__FUNCTION__) << "currentImage: " << ofToString(currentImage);
 	if (dir.size() > 0 && currentImage < dir.size() - 1)
 	{
 		imageName = dir.getName(currentImage);
@@ -390,8 +447,25 @@ void ofxColorQuantizerHelper::loadNext()
 {
 	if (currentImage < dir.size() - 1) currentImage++;
 	else if (currentImage == dir.size() - 1) currentImage = 0;
-	
-	ofLogNotice(__FUNCTION__) << "currentImage:" << ofToString(currentImage);
+
+	ofLogNotice(__FUNCTION__) << "currentImage: " << ofToString(currentImage);
+	if (dir.size() > 0 && currentImage < dir.size())
+	{
+		imageName = dir.getName(currentImage);
+		imageName_path = dir.getPath(currentImage);
+		buildFromImageFile(imageName_path, numColors);
+	}
+}
+
+//--------------------------------------------------------------
+void ofxColorQuantizerHelper::randomPalette()
+{
+	int pmin, pmax;
+	pmin = 0;
+	pmax = dir.size();
+	currentImage = ofRandom(pmin, pmax);
+
+	ofLogNotice(__FUNCTION__) << "currentImage: " << ofToString(currentImage);
 	if (dir.size() > 0 && currentImage < dir.size())
 	{
 		imageName = dir.getName(currentImage);
@@ -450,7 +524,7 @@ void ofxColorQuantizerHelper::refresh_Files()
 	textureSource.resize(dir.size());
 	textureSourceID.clear();
 	textureSourceID.resize(dir.size());
-	for (int i = 0; i < dir.size(); i++) 
+	for (int i = 0; i < dir.size(); i++)
 	{
 		textureSourceID[i] = gui_ImGui.loadTexture(textureSource[i], dir.getPath(i));
 	}
@@ -493,7 +567,7 @@ void ofxColorQuantizerHelper::setup()
 	//--
 
 	parameters.setName("COLOR QUANTIZER");
-	parameters.add(bReBuild.set("BUILD", false));
+	parameters.add(bReBuild.set("REBUILD", false));
 	parameters.add(numColors.set("Amount Colors", 10, 1, 20));
 	parameters.add(sortedType.set("Sort Type", 1, 1, 4));
 	parameters.add(sortedType_name.set(" ", sortedType_name));
@@ -842,7 +916,6 @@ void ofxColorQuantizerHelper::build()
 		//int _max = colorQuantizer.getNumColors() + 1;
 
 		colorQuantizer.setNumColors(_max);
-
 		colorQuantizer.quantize(imageCopy.getPixels());
 
 		sortedColors.clear();;
@@ -1035,7 +1108,7 @@ void ofxColorQuantizerHelper::rebuildMap()
 
 	int palSize = numColors;
 	//int palSize = colorQuantizer.getNumColors();
-	
+
 	palette.resize(palSize);
 
 	//palette = colorQuantizer.getColors();
@@ -1225,7 +1298,8 @@ ofxColorQuantizerHelper::ofxColorQuantizerHelper()
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
 {
-	if (ENABLE_Keys) {
+	if (ENABLE_Keys)
+	{
 		const int &key = eventArgs.key;
 		ofLogNotice(__FUNCTION__) << "key: " << key;
 
@@ -1260,30 +1334,36 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs &eventArgs)
 		{
 			loadPrev();
 		}
-		if (key == OF_KEY_DOWN || key == ' ')
+		if (key == OF_KEY_DOWN)// || key == ' ')
 		{
 			loadNext();
+		}
+
+		if (key == OF_KEY_RETURN)
+		{
+			randomPalette();
 		}
 
 		//-
 
 		// sort types
-		if (key == OF_KEY_LEFT)
-		{
-			sortedType++;
-			if (sortedType > 4) sortedType = 1;
-		}
-		if (key == OF_KEY_RIGHT)
-		{
-			sortedType--;
-			if (sortedType < 1) sortedType = 4;
-		}
-		//if (key == 's' || key == OF_KEY_BACKSPACE)
+		//if (key == OF_KEY_LEFT)
 		//{
 		//	sortedType++;
-		//	if (sortedType > 4)
-		//		sortedType = 1;
+		//	if (sortedType > 4) sortedType = 1;
 		//}
+		//if (key == OF_KEY_RIGHT)
+		//{
+		//	sortedType--;
+		//	if (sortedType < 1) sortedType = 4;
+		//}
+
+		if (key == 's' || key == OF_KEY_BACKSPACE)
+		{
+			sortedType++;
+			if (sortedType > 4)
+				sortedType = 1;
+		}
 
 		//-
 
