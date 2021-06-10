@@ -17,7 +17,6 @@ ofxColorQuantizerHelper
 * [ofxImGui](https://github.com/Daandelange/ofxImGui/tree/ofParameters-Helpers-Test) from @**Daandelange**  
 * [ofxSurfingImGui](https://github.com/moebiussurfing/ofxSurfingImGui)  
 * [ofxSurfingHelpers](https://github.com/moebiussurfing/ofxSurfingHelpers)  
-* ofxGui
 
 Already packed into ```/libs```. No need to add:  
 * [ofxColorQuantizer](https://github.com/moebiussurfing/ofxColorQuantizer) [ FORK ]  
