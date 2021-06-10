@@ -6,12 +6,12 @@
 // OPTIONAL
 //#define USE_OFX_GUI__QUANTIZER // comment to disable internal gui
 #define USE_IM_GUI__QUANTIZER
-//#define USE_IM_GUI__QUANTIZER_INTERNAL //TODO: to make grid thumbs browser we need the ImGui instance internal.. 
+#define USE_IM_GUI__QUANTIZER_INTERNAL //TODO: to make grid thumbs browser we need the ImGui instance internal.. 
 
 //-
 
 
-#define PANEL_WIDGETS_WIDTH 225
+#define PANEL_WIDGETS_WIDTH 250
 #define PANEL_WIDGETS_HEIGHT 100
 
 #define BUTTON_BIG_HEIGHT 50
@@ -23,7 +23,7 @@
 
 #ifdef USE_IM_GUI__QUANTIZER
 #include "ofxImGui.h"
-#include "ofxSurfing_ImGui.h"
+#include "ofxSurfingImGui.h"
 #endif
 
 #include "ofxOpenCv.h"
@@ -62,13 +62,24 @@ private:
 
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
 	//TODO:
+	//should remove some parameters..
 	//grid picker
 	ofParameter<int> sizeLibColBox;
 	vector<ofTexture> textureSource;
 	vector<GLuint> textureSourceID;
-	ofParameter<std::string> nameMat;
+	//ofParameter<std::string> nameMat;
 	ofParameter<int> indexBrowser;
-	int dirLoadIndex;
+	//int dirLoadIndex;
+	ofParameter<int> sizeThumb;
+	float __widthPicts;
+
+	ofxImGui::Gui* gui_ImGui;
+public:
+	void setImGuiPointer(ofxImGui::Gui& _gui) {
+		gui_ImGui = &_gui;
+	};
+	ofParameter<bool> SHOW_Library;
+	ofParameter<bool> bResponsive;
 #endif
 
 	//-
@@ -190,7 +201,8 @@ public:
 
 	void setEnableVisibleHelpInfo(bool b)
 	{
-		ENABLE_HelpInfo = b;
+		SHOW_HelpInfo = b;
+		SHOW_ImageInfo = b;
 	}
 
 	glm::vec2 getPosition()
@@ -301,10 +313,12 @@ private:
 		}
 	};
 
+public:
 	void build();//split from quantizer to avoid reload image
 
 	//-
 
+private:
 	void buildFromImageFile(std::string path, int num);
 	void buildFromImageUrl(std::string url, int num);
 
@@ -319,6 +333,9 @@ private:
 #endif
 
 public:
+	void setNumColors(int i) {
+		numColors = i;
+	}
 	ofParameter<int> sortedType;
 	ofParameter<int> numColors;
 	ofParameter<std::string> sortedType_name;
@@ -354,10 +371,14 @@ private:
 	ofDirectory dir;
 
 public:
-	ofParameter<bool> ENABLE_HelpInfo;// { "HELP INFO", false };
+	ofParameter<bool> SHOW_HelpInfo;// { "HELP INFO", false };
+	ofParameter<bool> SHOW_ImageInfo;
 
 public:
 	void dragEvent(ofDragInfo &eventArgs);
+	void addImage(std::string path);
+	void refresh_FilesSorting(std::string name);//after saving new preset, refresh files and select the just saved preset
+
 	void addDragListeners();
 	void removeDragListeners();
 
@@ -379,5 +400,8 @@ private:
 	void XML_save_AppSettings(ofParameterGroup &g, std::string path);
 	void XML_load_AppSettings(ofParameterGroup &g, std::string path);
 	ofParameterGroup XML_params;
-	std::string XML_path = "ofxColorQuantizerHelper/ofxColorQuantizerHelper_Settings.xml";
+	std::string XML_path_Folder = "ofxColorQuantizerHelper/";
+	std::string XML_path = "ofxColorQuantizerHelper_Settings.xml";
+
+	void setImage();
 };
