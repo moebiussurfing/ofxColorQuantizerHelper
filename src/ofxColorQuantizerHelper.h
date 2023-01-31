@@ -1,15 +1,26 @@
 #pragma once
+
+/*
+
+	TODO:
+	add threading for loading file picture.
+
+
+*/
+
+
 #include "ofMain.h"
 
-//-
+//--
 
 // OPTIONAL
-//#define USE_OFX_GUI__QUANTIZER // comment to disable internal gui
+//#define USE_OFX_GUI__QUANTIZER
+// comment to disable internal gui
 #define USE_IM_GUI__QUANTIZER
-#define USE_IM_GUI__QUANTIZER_INTERNAL //TODO: to make grid thumbs browser we need the ImGui instance internal.. 
+#define USE_IM_GUI__QUANTIZER_INTERNAL
+//TODO: to make grid thumbs browser we need the ImGui instance internal.. 
 
-//-
-
+//--
 
 #define PANEL_WIDGETS_WIDTH 250
 #define PANEL_WIDGETS_HEIGHT 100
@@ -29,7 +40,9 @@
 #include "ofxColorQuantizer.h"
 #include "ofxSurfingHelpers.h"
 #include "ofxSurfing_ofxGui.h"
-#include "imgInspect.h"
+
+//TODO:
+//#include "imgInspect.h"
 
 typedef struct
 {
@@ -37,15 +50,17 @@ typedef struct
 	ofColor color;
 } colorMapping;
 
+//--
+
 class ofxColorQuantizerHelper
 {
-	//-
+	//--
 
 	//TODO:
 	//thumbs. required multiple ImGui contexts here
-//public:
-//	vector<ofTexture> textureSource;
-//	vector<GLuint> textureSourceID;
+	//public:
+	//	vector<ofTexture> textureSource;
+	//	vector<GLuint> textureSourceID;
 	//void draw_Gui2();
 
 public:
