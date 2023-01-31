@@ -22,7 +22,6 @@
 #endif
 
 #ifdef USE_IM_GUI__QUANTIZER
-#include "ofxImGui.h"
 #include "ofxSurfingImGui.h"
 #endif
 
@@ -30,6 +29,7 @@
 #include "ofxColorQuantizer.h"
 #include "ofxSurfingHelpers.h"
 #include "ofxSurfing_ofxGui.h"
+#include "imgInspect.h"
 
 typedef struct
 {
@@ -49,21 +49,22 @@ class ofxColorQuantizerHelper
 	//void draw_Gui2();
 
 public:
-	ofParameter<bool> SHOW_AdvancedLayout{ "Show Advanced", false };
+	ofParameter<bool> bGui_Advanced{ "Show Advanced", false };
 
 public:
-	void draw_Gui();
+	void draw_ImGuiWidgets();
+	void draw_ImGuiPicture();
+	void draw_ImGuiLibrary();
 
 private:
 	ofTexture tex;
 	ofFbo fbo;
 	void refresh_QuantizerImage();
-	ofxImGui::Settings mainSettings = ofxImGui::Settings();	
 
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
 	//TODO:
-	//should remove some parameters..
-	//grid picker
+	// should remove some parameters..
+	// grid picker
 	ofParameter<int> sizeLibColBox;
 	vector<ofTexture> textureSource;
 	vector<GLuint> textureSourceID;
@@ -73,16 +74,25 @@ private:
 	ofParameter<int> sizeThumb;
 	float __widthPicts;
 
-	ofxImGui::Gui* gui_ImGui;
+	//--
+
+private:
+	ofxSurfingGui* ui;
 public:
-	void setImGuiPointer(ofxImGui::Gui& _gui) {
-		gui_ImGui = &_gui;
+	void setUiPtr(ofxSurfingGui* ui_) {
+		ui = ui_;
 	};
-	ofParameter<bool> SHOW_Library;
+	ofxSurfingGui* getUiPtr() {
+		return ui;
+	};
+
+	//--
+
+	ofParameter<bool> bGui_Library;
 	ofParameter<bool> bResponsive;
 #endif
 
-	//-
+	//--
 
 public:
 	int getPaletteSize() {
@@ -94,9 +104,7 @@ public:
 
 	void loadNext();
 	void loadPrev();
-	void randomPalette
-	
-	();
+	void randomPalette();
 
 private:
 	//easy callback
@@ -114,25 +122,25 @@ public:
 	}
 
 private:
-	ofParameter<bool> bInfo;
-	
+	ofParameter<bool> bGui_Info;
+
 #ifdef USE_OFX_GUI__QUANTIZER
-	ofParameter<bool> bGuiVisible;
+	ofParameter<bool> bGui;
 #endif
 
 public:
 	std::string infoHelp;//key commands
 
-	
+
 #ifdef USE_OFX_GUI__QUANTIZER
 public:
 	void setVisible(bool b)
 	{
-		bGuiVisible = b;
+		bGui = b;
 	}
 	void setToggleVisible()
 	{
-		bGuiVisible = !bGuiVisible;
+		bGui = !bGui;
 	}
 #endif
 
@@ -150,7 +158,6 @@ public:
 	~ofxColorQuantizerHelper();
 
 	void setup();
-	//void update();
 	void draw();
 	void exit();
 
@@ -201,8 +208,8 @@ public:
 
 	void setEnableVisibleHelpInfo(bool b)
 	{
-		SHOW_HelpInfo = b;
-		SHOW_ImageInfo = b;
+		bGui_InfoHelp = b;
+		bGui_InfoImage = b;
 	}
 
 	glm::vec2 getPosition()
@@ -244,11 +251,11 @@ public:
 	//--
 
 	// pointers back to 'communicate externally'
-	void setPalette_BACK_Name(std::string &n);
-	void setPalette_BACK(vector<ofColor> &p);
-	void setPalette_BACK_RefreshPalette(bool &b);
-	void setColor_BACK(ofColor &c);
-	void setColor_BACK_Refresh(bool &b);
+	void setPalette_BACK_Name(std::string& n);
+	void setPalette_BACK(vector<ofColor>& p);
+	void setPalette_BACK_RefreshPalette(bool& b);
+	void setColor_BACK(ofColor& c);
+	void setColor_BACK_Refresh(bool& b);
 
 private:
 	//build palette from already quantized and sorted colors
@@ -259,11 +266,11 @@ private:
 	//--
 
 	// pointers back to 'communicate externally'
-	ofColor *myColor_BACK;
-	vector<ofColor> *myPalette_BACK;
-	std::string *myPalette_Name_BACK;
-	bool *bUpdated_Palette_BACK;
-	bool *bUpdated_Color_BACK;
+	ofColor* myColor_BACK = nullptr;
+	vector<ofColor>* myPalette_BACK = nullptr;
+	std::string* myPalette_Name_BACK = nullptr;
+	bool* bUpdated_Palette_BACK = nullptr;
+	bool* bUpdated_Color_BACK = nullptr;
 
 	void draw_Palette_Preview();
 
@@ -271,7 +278,7 @@ private:
 
 	glm::vec2 position = glm::vec2(0, 0);
 	glm::vec2 size = glm::vec2(1440, 900);
-	bool auto_resize = false;
+	//bool auto_resize = false;
 
 	std::string pathFolder = "images/";
 	bool isLoadedImage = false;
@@ -285,7 +292,7 @@ public:
 		return dir.size();
 	}
 
-	ofImage &getImage() {
+	ofImage& getImage() {
 		return image;
 	}
 
@@ -307,16 +314,17 @@ private:
 
 	struct by_distance
 	{
-		bool operator()(weightedColor const &a, weightedColor const &b)
+		bool operator()(weightedColor const& a, weightedColor const& b)
 		{
 			return a.distance > b.distance;
 		}
 	};
 
 public:
-	void build();//split from quantizer to avoid reload image
+	void build();
+	//split from quantizer to avoid reload image
 
-	//-
+	//--
 
 private:
 	void buildFromImageFile(std::string path, int num);
@@ -325,7 +333,7 @@ private:
 	map<int, ofColor> colorMap;
 	vector<colorMapping> colorMapSortable;
 
-	//-
+	//--
 
 #ifdef USE_OFX_GUI__QUANTIZER
 private:
@@ -342,13 +350,13 @@ public:
 	ofParameter<std::string> labelUrlStr;
 	ofParameter<bool> bReBuild;
 	ofParameter<int> currentImage;
-	ofParameter<bool> ENABLE_Keys;
+	ofParameter<bool> bKeys;
 
 private:
 	ofParameterGroup parameters;
 	ofParameterGroup parameters_Advanced;
-	
-	void Changed_parameters(ofAbstractParameter &e);
+
+	void Changed_parameters(ofAbstractParameter& e);
 
 	// main palette
 	vector<ofColor> palette;
@@ -371,37 +379,39 @@ private:
 	ofDirectory dir;
 
 public:
-	ofParameter<bool> SHOW_HelpInfo;// { "HELP INFO", false };
-	ofParameter<bool> SHOW_ImageInfo;
+	ofParameter<bool> bGui_InfoHelp;
+	ofParameter<bool> bGui_InfoImage;
+	ofParameter<bool> bGui_Picture;
 
 public:
-	void dragEvent(ofDragInfo &eventArgs);
+	void dragEvent(ofDragInfo& eventArgs);
 	void addImage(std::string path);
-	void refresh_FilesSorting(std::string name);//after saving new preset, refresh files and select the just saved preset
+	void refresh_FilesSorting(std::string name);
+	// after saving new preset, refresh files and select the just saved preset
 
 	void addDragListeners();
 	void removeDragListeners();
 
 private:
-	void keyPressed(ofKeyEventArgs &eventArgs);
-	void keyReleased(ofKeyEventArgs &eventArgs);
+	void keyPressed(ofKeyEventArgs& eventArgs);
+	void keyReleased(ofKeyEventArgs& eventArgs);
 	void addKeysListeners();
 	void removeKeysListeners();
 
-	void mouseDragged(ofMouseEventArgs &eventArgs);
-	void mousePressed(ofMouseEventArgs &eventArgs);
-	void mouseReleased(ofMouseEventArgs &eventArgs);
+	void mouseDragged(ofMouseEventArgs& eventArgs);
+	void mousePressed(ofMouseEventArgs& eventArgs);
+	void mouseReleased(ofMouseEventArgs& eventArgs);
 	void addMouseListeners();
 	void removeMouseListeners();
 
 	bool isActive = true;
 
-	// APP SETTINGS XML
-	void XML_save_AppSettings(ofParameterGroup &g, std::string path);
-	void XML_load_AppSettings(ofParameterGroup &g, std::string path);
-	ofParameterGroup XML_params;
-	std::string XML_path_Folder = "ofxColorQuantizerHelper/";
-	std::string XML_path = "ofxColorQuantizerHelper_Settings.xml";
+	// App settings xml
+	void saveAppSettings(ofParameterGroup& g, std::string path);
+	void loadAppSettings(ofParameterGroup& g, std::string path);
+	ofParameterGroup params_AppSettings;
+	std::string path_AppSettings = "ofxColorQuantizerHelper_Settings.xml";
+	std::string path_Global = "ofxColorQuantizerHelper/";
 
 	void setImage();
 };

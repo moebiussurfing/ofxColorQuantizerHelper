@@ -5,7 +5,8 @@
 #include "ofxColorQuantizerHelper.h"
 #include "ofxSurfingImGui.h"
 
-class ofApp: public ofBaseApp{
+class ofApp: public ofBaseApp
+{
 	public:
 		void setup();
 		void draw();
@@ -16,5 +17,5 @@ class ofApp: public ofBaseApp{
 		// NOTE
 		// This addon requires to instantiate ImGui to "draw" widgets panels inside.
 		// the addon itself has th
-		ofxSurfing_ImGui_Manager guiManager;
+		ofxSurfingGui ui;
 };
