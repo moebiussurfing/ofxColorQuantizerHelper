@@ -30,6 +30,7 @@
 
 #ifdef USE_OFX_GUI__QUANTIZER
 #include "ofxGui.h"
+#include "ofxSurfing_ofxGui.h"
 #endif
 
 #ifdef USE_IM_GUI__QUANTIZER
@@ -39,7 +40,6 @@
 #include "ofxOpenCv.h"
 #include "ofxColorQuantizer.h"
 #include "ofxSurfingHelpers.h"
-#include "ofxSurfing_ofxGui.h"
 
 //TODO:
 //#include "imgInspect.h"
@@ -83,11 +83,11 @@ private:
 	ofParameter<int> sizeLibColBox;
 	vector<ofTexture> textureSource;
 	vector<GLuint> textureSourceID;
-	//ofParameter<std::string> nameMat;
 	ofParameter<int> indexBrowser;
-	//int dirLoadIndex;
 	ofParameter<int> sizeThumb;
 	float __widthPicts;
+	//ofParameter<std::string> nameMat;
+	//int dirLoadIndex;
 
 	//--
 
