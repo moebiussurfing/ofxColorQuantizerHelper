@@ -4,12 +4,12 @@
 ofxColorQuantizer::ofxColorQuantizer(){
 	
 	// set default # of colors
-	numColors = 12;
+	amountColors = 12;
 }
 
 vector<ofColor> & ofxColorQuantizer::quantize(ofPixels inputImage){
 	
-	const int colorCount = numColors;
+	const int colorCount = amountColors;
 	const int sampleCount = inputImage.getHeight() * inputImage.getWidth();
 	cv::Mat colorSamples( sampleCount, 1, CV_32FC3 );
 	
@@ -107,12 +107,12 @@ vector<ofColor> & ofxColorQuantizer::getColors(){
 
 void ofxColorQuantizer::setNumColors(unsigned int nColors){
 	
-	numColors = nColors;
+	amountColors = nColors;
 }
 
 int ofxColorQuantizer::getNumColors(){
 
-	return numColors;
+	return amountColors;
 }
 
 vector< float > ofxColorQuantizer::getColorWeights() {

@@ -34,6 +34,6 @@ public:
 protected:	
 	
 	vector<ofColor>colors;
-	unsigned int numColors;
+	unsigned int amountColors;
     vector<float>histogram;
 };

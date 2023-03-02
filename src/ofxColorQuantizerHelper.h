@@ -64,7 +64,7 @@ class ofxColorQuantizerHelper
 	//void draw_Gui2();
 
 public:
-	ofParameter<bool> bGui_Advanced{ "Show Advanced", false };
+	//ofParameter<bool> bGui_Advanced{ "Show Advanced", false };
 
 public:
 	void draw_ImGuiWidgets();
@@ -84,7 +84,11 @@ private:
 	vector<ofTexture> textureSource;
 	vector<GLuint> textureSourceID;
 	ofParameter<int> indexBrowser;
-	ofParameter<int> sizeThumb;
+	ofParameter<int> thumbsSize;
+	ofParameter<int> thumbsSpacing;
+	ofParameter<int> thumbsBorder;
+	ofParameterGroup params_Thumbs;
+
 	float __widthPicts;
 	//ofParameter<std::string> nameMat;
 	//int dirLoadIndex;
@@ -105,6 +109,8 @@ public:
 
 	ofParameter<bool> bGui_Library;
 	ofParameter<bool> bResponsive;
+	ofParameter<bool> bAutoResizeLib;
+
 #endif
 
 	//--
@@ -137,7 +143,7 @@ public:
 	}
 
 private:
-	ofParameter<bool> bGui_Info;
+	//ofParameter<bool> bGui_Info;
 
 #ifdef USE_OFX_GUI__QUANTIZER
 	ofParameter<bool> bGui;
@@ -182,6 +188,7 @@ public:
 private:
 	void refresh_Files();
 	ofTrueTypeFont font;
+	ofTrueTypeFont font2;
 
 public:
 	bool isActivated() {
@@ -223,8 +230,8 @@ public:
 
 	void setEnableVisibleHelpInfo(bool b)
 	{
-		bGui_InfoHelp = b;
-		bGui_InfoImage = b;
+		bGui_Help = b;
+		bGui_WidgetInfo = b;
 	}
 
 	glm::vec2 getPosition()
@@ -300,7 +307,7 @@ private:
 	bool isVisible_gui = true;
 
 	ofxColorQuantizer colorQuantizer;
-	void quantizeImage(std::string imageName, int numColors);
+	void quantizeImage(std::string imageName, int amountColors);
 
 public:
 	int getAountFiles() {
@@ -357,10 +364,10 @@ private:
 
 public:
 	void setNumColors(int i) {
-		numColors = i;
+		amountColors = i;
 	}
 	ofParameter<int> sortedType;
-	ofParameter<int> numColors;
+	ofParameter<int> amountColors;
 	ofParameter<std::string> sortedType_name;
 	ofParameter<std::string> labelUrlStr;
 	ofParameter<bool> bReBuild;
@@ -394,8 +401,8 @@ private:
 	ofDirectory dir;
 
 public:
-	ofParameter<bool> bGui_InfoHelp;
-	ofParameter<bool> bGui_InfoImage;
+	ofParameter<bool> bGui_Help;
+	ofParameter<bool> bGui_WidgetInfo;
 	ofParameter<bool> bGui_Picture;
 
 public:
