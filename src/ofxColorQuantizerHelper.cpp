@@ -54,9 +54,9 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 		ui->AddSpacingSeparated();
 
 		ui->Add(bGui_Library, OFX_IM_TOGGLE_ROUNDED);
-		if (bGui_Library) {
+		if (bGui_Library && ui->isMaximized()) {
 			ui->Indent();
-			ui->Add(bAutoResizeLib, OFX_IM_TOGGLE_ROUNDED);
+			ui->Add(bAutoResizeLib, OFX_IM_TOGGLE_ROUNDED_MINI);
 			ui->Unindent();
 		}
 
@@ -75,7 +75,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 
 		if (!imageNames.empty())
 		{
-			ui->AddLabelBig("FILE");
+			if(ui->isMaximized()) ui->AddLabelBig("FILE");
 			ui->AddSpacing();
 
 			// index / total
@@ -89,12 +89,12 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 
 		//--
 
-		if (ui->AddButton("<", OFX_IM_BUTTON_BIG, 2))
+		if (ui->AddButton("<", OFX_IM_BUTTON_MEDIUM, 2))
 		{
 			loadPrev();
 		}
 		ui->SameLine();
-		if (ui->AddButton(">", OFX_IM_BUTTON_BIG, 2))
+		if (ui->AddButton(">", OFX_IM_BUTTON_MEDIUM, 2))
 		{
 			loadNext();
 		}
@@ -103,7 +103,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 
 		ui->AddSpacing();
 
-		ui->AddLabelBig("PICTURE");
+		if (ui->isMaximized()) ui->AddLabelBig("PICTURE");
 
 		// 2. Image preview
 
@@ -257,18 +257,19 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 					//ui->Add(bGui_Library, OFX_IM_TOGGLE_SMALL, 1);
 					if (bGui_Library)
 					{
-						ui->Add(bResponsive, OFX_IM_TOGGLE_SMALL, 1);
+						//ui->Add(bResponsive, OFX_IM_TOGGLE_SMALL, 1);
 						//ofxImGui::AddParameter(bGui_Library);
 
 						//if (bGui_Library)
 						{
-							if (!bResponsive)
+							//if (!bResponsive)
 							{
-								//ImGui::PushItemWidth(__pad);
-								ui->Add(thumbsSize, OFX_IM_STEPPER);
-								ui->Add(thumbsSpacing, OFX_IM_STEPPER);
-								ui->Add(thumbsBorder, OFX_IM_STEPPER);
-								//ImGui::PopItemWidth();
+								SurfingGuiTypes t = OFX_IM_HSLIDER_MINI;
+								//SurfingGuiTypes t = OFX_IM_STEPPER;
+
+								ui->Add(thumbsSize, t);
+								ui->Add(thumbsSpacing, t);
+								ui->Add(thumbsBorder, t);
 
 								if (ui->AddButton("Fit", OFX_IM_TOGGLE_SMALL, 2))
 								{
@@ -276,14 +277,18 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 								}
 							}
 						}
+
+						if(ui->AddButton("Reset", OFX_IM_BUTTON)) {
+							doReset();
+						};
 					}
 #endif
 					ui->AddSpacingSeparated();
 
 					//ImGui::Checkbox("Auto-Resize", &auto_resize);
-					ui->Add(bKeys, OFX_IM_TOGGLE_ROUNDED_MINI);
 					ui->Add(bGui_Help, OFX_IM_TOGGLE_ROUNDED_MINI);
 					ui->Add(bGui_WidgetInfo, OFX_IM_TOGGLE_ROUNDED_MINI);
+					ui->Add(bKeys, OFX_IM_TOGGLE_ROUNDED_MINI);
 				}
 			}
 		}
@@ -324,19 +329,24 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 
 			//ImVec2 button_sz((float)thumbsSize.get(), (float)thumbsSize.get());
 			ImVec2 button_sz;
-			float _ww, _hh, _ratio;
-			if (bResponsive)
-			{
-				static int sizeThumb_ = 0;
-				if (sizeThumb_ != thumbsSize)
-				{
-					sizeThumb_ = thumbsSize;
+			float _ww;
+			float _hh, _ratio;
+			//if (bResponsive.get())
+			//{
+			//	static int sizeThumb_ = 1;
+			//	if (sizeThumb_ != thumbsSize.get())
+			//	{
+			//		sizeThumb_ = thumbsSize;
 
-					thumbsSize = __widthPicts;
-					_ww = thumbsSize;
-				}
-			}
-			else {
+			//		//thumbsSize = __widthPicts;
+			//		//_ww = thumbsSize;
+
+			//		_ww = sizeThumb_;
+			//	}
+			//	else _ww = thumbsSize;
+			//}
+			//else
+			{
 				//if (bResponsive) _ww = __widthPicts;
 				//else _ww = (float)thumbsSize.get();
 
@@ -362,17 +372,21 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 
 				// spacing and border
 				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, (float)thumbsBorder.get());
-				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, (float)thumbsSpacing.get()));
-				ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, (float)thumbsSpacing.get()));
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
 
 				string name = ofToString(n);
 
 				// Customize colors
 				if (n == indexBrowser) // when selected
 				{
-					const ImVec4 color1 = style.Colors[ImGuiCol_Text];
-					//const ImVec4 color1 = style.Colors[ImGuiCol_ButtonActive];
+					float a = 0.7;
+					const ImVec4 color1_ = style.Colors[ImGuiCol_Text];
+					const ImVec4 color1 = ImVec4(color1_.x, color1_.y, color1_.z, color1_.w * a);
 					ImGui::PushStyleColor(ImGuiCol_Border, color1);
+
+					//const ImVec4 color1 = style.Colors[ImGuiCol_ButtonActive];
 					//ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color1);
 					//ImGui::PushStyleColor(ImGuiCol_Button, color1);
 				}
@@ -410,6 +424,7 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 				if (n + 1 < _amountImages && next_button_x2 < _wx2) ui->SameLine();
 
 				// spacing and border
+				ImGui::PopStyleVar();
 				ImGui::PopStyleVar();
 				ImGui::PopStyleVar();
 				ImGui::PopStyleVar();
@@ -689,8 +704,8 @@ void ofxColorQuantizerHelper::setup()
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
 	parameters.add(bGui_Library.set("LIBRARY", true));
 	parameters.add(bGui_Picture.set("PICTURE", true));
-	parameters.add(bResponsive.set("Responsive", true));
 	parameters.add(thumbsSize);
+	//parameters.add(bResponsive.set("Responsive", true));
 
 	bAutoResizeLib.set("Auto Resize Lib", true);
 	parameters.add(bAutoResizeLib);
@@ -746,8 +761,8 @@ void ofxColorQuantizerHelper::setup()
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
 	params_AppSettings.add(params_Thumbs);
 	params_AppSettings.add(bGui_Library);
-	params_AppSettings.add(bResponsive);
 	params_AppSettings.add(bAutoResizeLib);
+	//params_AppSettings.add(bResponsive);
 #endif
 
 	loadAppSettings(params_AppSettings, path_Global + path_AppSettings);

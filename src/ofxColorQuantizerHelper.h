@@ -108,7 +108,7 @@ public:
 	//--
 
 	ofParameter<bool> bGui_Library;
-	ofParameter<bool> bResponsive;
+	//ofParameter<bool> bResponsive;
 	ofParameter<bool> bAutoResizeLib;
 
 #endif
@@ -126,6 +126,12 @@ public:
 	void loadNext();
 	void loadPrev();
 	void randomPalette();
+	
+	void doReset() {
+		thumbsSize = 200;
+		thumbsSpacing = 2;
+		thumbsBorder = 2;
+	};
 
 private:
 	//easy callback
