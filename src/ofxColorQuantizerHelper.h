@@ -6,8 +6,11 @@
 	
 	add threading for loading file picture.
 	
-	small library window breaks grid layout 
+	small library window breaks grid layout. 
 		only showing first 4 picts..
+
+	allow drag internet browser images.
+
 
 */
 
@@ -24,11 +27,6 @@
 //TODO: to make grid thumbs browser we need the ImGui instance internal.. 
 
 //--
-
-//#define PANEL_WIDGETS_WIDTH 250
-//#define PANEL_WIDGETS_HEIGHT 100
-//#define BUTTON_BIG_HEIGHT 50
-//#define NUM_QUANTIZER_COLORS_PER_ROW 4
 
 #ifdef USE_OFX_GUI__QUANTIZER
 #include "ofxGui.h"
@@ -146,7 +144,7 @@ public:
 
 private:
 	void doReset() {
-		thumbsSize = 200;
+		thumbsSize = 150;
 		thumbsSpacing = 2;
 		thumbsBorder = 2;
 	};
@@ -190,7 +188,7 @@ public:
 	//#endif
 
 	//build palette from already quantized and sorted colors
-	//void rebuildMap();
+	//void rebuildSorting();
 
 	ofParameterGroup getParameters() {
 		return parameters;
@@ -198,12 +196,13 @@ public:
 
 	//--
 
-	// API
-
 private:
 	void refresh_Files();
+	
 	ofTrueTypeFont font;
 	ofTrueTypeFont font2;
+
+	bool bDoReset = false;
 
 	//public:
 private:
@@ -232,14 +231,6 @@ private:
 			removeDragListeners();
 		}
 	}
-
-	//private:
-	//ofParameter<bool> bottomMode;
-	//public:
-	//	void setBottomMode(bool b)
-	//	{
-	//		bottomMode = b;
-	//	}
 
 private:
 	void setEnableVisibleHelpInfo(bool b)
@@ -297,7 +288,7 @@ public:
 
 private:
 	// Build palette from already quantized and sorted colors
-	void rebuildMap();
+	void rebuildSorting();
 
 private:
 
@@ -359,7 +350,7 @@ private:
 	};
 
 public:
-	void build();
+	void buildQuantize();
 	// split from quantizer to avoid reload image
 
 	//--
