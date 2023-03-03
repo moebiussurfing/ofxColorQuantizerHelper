@@ -20,4 +20,6 @@ class ofApp: public ofBaseApp
 		ofxSurfingGui ui;
 
 		ofColor c;
+
+		ofImage img;
 };

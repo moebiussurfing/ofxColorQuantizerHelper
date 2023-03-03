@@ -20,8 +20,9 @@
 //--
 
 // OPTIONAL
+// 
 //#define USE_OFX_GUI__QUANTIZER
-// comment to disable internal gui
+// comment to disable internal ofxGui
 #define USE_IM_GUI__QUANTIZER
 #define USE_IM_GUI__QUANTIZER_INTERNAL
 //TODO: to make grid thumbs browser we need the ImGui instance internal.. 
@@ -37,13 +38,18 @@
 #include "ofxSurfingImGui.h"
 #endif
 
+//--
+
 #include "ofxOpenCv.h"
 #include "ofxColorQuantizer.h"
 #include "ofxSurfingHelpers.h"
-#include "ofxThreadedImageLoader.h"
+
+//--
 
 //TODO:
 //#include "imgInspect.h"
+
+//--
 
 typedef struct
 {
@@ -76,16 +82,19 @@ private:
 private:
 	ofTexture tex;
 	ofFbo fbo;
-	void refreshImageTexture();
+	void refreshImageGuiTexture();
 
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
 	//TODO:
-	// should remove some parameters..
 	// grid picker
-	ofParameter<int> sizeLibColBox;
 	vector<ofTexture> textureSource;
 	vector<GLuint> textureSourceID;
-	ofParameter<int> indexBrowser;
+
+	// should remove some parameters..
+	ofParameter<int> sizeLibColBox;
+	int currentImage_PRE;
+	//ofParameter<int> currentImage_PRE;
+	
 	ofParameter<int> thumbsSize;
 	ofParameter<int> thumbsSpacing;
 	ofParameter<int> thumbsBorder;
@@ -121,7 +130,7 @@ private:
 	//--
 
 private:
-	bool bUseNativeWidgets = true;
+	bool bUseNativeWidgets = false;
 
 public:
 	void setEnableNativeWidgets(bool b) {
@@ -146,11 +155,12 @@ private:
 	void doReset() {
 		thumbsSize = 150;
 		thumbsSpacing = 2;
-		thumbsBorder = 2;
+		thumbsBorder = 1;
 	};
 
 private:
-	// easy callback
+
+	// Image changed easy callback
 	bool bUpdate = false;
 
 public:
@@ -185,10 +195,6 @@ public:
 	{
 		bGui = !bGui;
 	}
-	//#endif
-
-	//build palette from already quantized and sorted colors
-	//void rebuildSorting();
 
 	ofParameterGroup getParameters() {
 		return parameters;
@@ -197,14 +203,14 @@ public:
 	//--
 
 private:
-	void refresh_Files();
+	void refreshFiles();
 	
 	ofTrueTypeFont font;
 	ofTrueTypeFont font2;
 
 	bool bDoReset = false;
 
-	//public:
+	//TODO: not used
 private:
 	bool isActivated() {
 		return isActive;
@@ -288,7 +294,7 @@ public:
 
 private:
 	// Build palette from already quantized and sorted colors
-	void rebuildSorting();
+	void buildSorting();
 
 private:
 
@@ -317,7 +323,7 @@ private:
 	void quantizeImage(std::string imageName, int amountColors);
 
 public:
-	int getAountFiles() {
+	int getAmountFiles() {
 		return dir.size();
 	}
 
@@ -418,7 +424,7 @@ public:
 
 private:
 	void addImage(std::string path);
-	void refresh_FilesSorting(std::string name);
+	void refreshFilesSorting(std::string name);
 	// After saving new preset, refresh files and select the just saved preset
 
 	void addDragListeners();

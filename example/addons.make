@@ -4,4 +4,3 @@ ofxImGui
 ofxOpenCv
 ofxSurfingHelpers
 ofxSurfingImGui
-ofxThreadedImageLoader

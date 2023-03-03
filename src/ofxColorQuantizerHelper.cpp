@@ -2,17 +2,20 @@
 
 #ifdef USE_IM_GUI__QUANTIZER
 //--------------------------------------------------------------
-void ofxColorQuantizerHelper::refreshImageTexture()
+void ofxColorQuantizerHelper::refreshImageGuiTexture()
 {
-	ofLogNotice("ofxColorQuantizerHelper") << "refreshImageTexture()";
+	ofLogNotice("ofxColorQuantizerHelper") << "refreshImageGuiTexture()";
 
 	// loaded ofImage
-	//ofLogNotice("ofxColorQuantizerHelper") << " image path: " << getImagePath();
+	ofLogNotice("ofxColorQuantizerHelper") << "image path: " << getImagePath();
 
 	bool b = ofGetUsingArbTex();
 
 	ofDisableArbTex();
+	
+	//TODO: could improve reusing this image for quantizer too..
 	ofLoadImage(tex, getImagePath());
+
 	fbo.allocate(tex.getWidth(), tex.getHeight());
 	fbo.createAndAttachTexture(GL_RGB, 0); //Position
 	fbo.createAndAttachTexture(GL_RGBA32F, 1); //velocity
@@ -90,7 +93,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			if (ui->isMaximized())
 			{
 				// index / total
-				std::string s = ofToString(currentImage.get()) + "/" + ofToString(getAountFiles() - 1);
+				std::string s = ofToString(currentImage.get()) + "/" + ofToString(getAmountFiles() - 1);
 				ui->AddLabel(s);
 			}
 
@@ -122,7 +125,9 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 		// Pict name
 		//if (ui->isMaximized()) ui->AddLabel(currentImage_name.get());
 
-		// 2. Image preview
+		//--
+
+		// 2. Image Preview
 
 		if (tex.isAllocated())
 		{
@@ -133,13 +138,9 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			float hh;
 
 			ww = _w100 - 2 * _spcx;
-			//ww = _w100 - _spcx;
-			//ww = _w100 - 20;
-
 			hh = ww * ratio;
 
 			const float H_MAX = 300;
-
 			if (hh > H_MAX)
 			{
 				ww = H_MAX / ratio;
@@ -159,14 +160,12 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			//	ww = _w99 - 20; // hardcoded pad to avoid flickering bug...
 			//}
 
-			if (ImGui::ImageButton
-			(
-				(ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID,
+			if (ImGui::ImageButton((ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID,
 				ImVec2(ww, ww * ratio)))
 			{
 				ofLogNotice("ofxColorQuantizerHelper") << "Image Pressed";
 				// workflow
-				// sort
+				// next sort
 				sortedType++;
 				if (sortedType > 4) sortedType = 1;
 			}
@@ -256,7 +255,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 					// workflow
 					// to allow add more files on runtime
 					int currentImage_PRE = currentImage;
-					refresh_Files();
+					refreshFiles();
 					currentImage = currentImage_PRE;
 					buildQuantize();
 				}
@@ -338,7 +337,7 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 			window_flags += ImGuiWindowFlags_AlwaysAutoResize;
 		}
 
-		//TODO: fix grid layout.
+		//TODO: fix grid layout reset.
 		float offset = 0;
 		//float offset = style.WindowPadding.x;
 		//for (int i = 0; i < _amountImages; i++)
@@ -349,8 +348,11 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 		//	offset += style.ItemInnerSpacing.x;
 		//}
 
+		// reset
 		float wdef = 400;
 		float hdef = ofGetHeight() / 2;
+
+		// constraints
 		float wmax = ofGetWidth();
 		float hmax = ofGetHeight() - 50;
 
@@ -373,7 +375,7 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 
 		if (ui->BeginWindow(bGui_Library, window_flags))
 		{
-			indexBrowser = currentImage;
+			currentImage_PRE = currentImage;
 
 			float _spcx;
 			float _spcy;
@@ -432,22 +434,28 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 				_hh = _ww * _ratio;
 				szImgButton = ImVec2(_ww, _hh);
 
-				//-
+				//--
 
 				ImGui::PushID(n);
 
 				// Tweak spacing and border
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, (float)thumbsBorder.get());
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
-				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
-				ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize,
+					(float)thumbsBorder.get());
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+					ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
+					ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing,
+					ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
 
-				string name = ofToString(n);
+				//string name = ofToString(n);
 
 				// Customize colors
-				if (n == indexBrowser) // when selected
+				if (n == currentImage_PRE) // when selected
 				{
-					float a = 0.7;
+					float a = ofxSurfingHelpers::getFadeBlink();
+					//float a = 0.7;
+
 					const ImVec4 color1_ = style.Colors[ImGuiCol_Text];
 					const ImVec4 color1 = ImVec4(color1_.x, color1_.y, color1_.z, color1_.w * a);
 					ImGui::PushStyleColor(ImGuiCol_Border, color1);
@@ -463,19 +471,19 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 					//ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color2);
 				}
 
-				//-
+				//--
 
 				// Image button
 				if (ImGui::ImageButton(GetImTextureID(textureSourceID[n]), szImgButton))
 				{
 					ofLogNotice("ofxColorQuantizerHelper") << "[ " + ofToString(n) + " ] THUMB : " + dir.getName(n);
 
-					indexBrowser = n;
+					currentImage_PRE = n;
 
 					//--
 
-					// that calls the callback!
-					currentImage = indexBrowser;
+					// Here will trig the callback!
+					currentImage = currentImage_PRE;
 				}
 
 				//--
@@ -594,7 +602,7 @@ void ofxColorQuantizerHelper::randomPalette()
 }
 
 //--------------------------------------------------------------
-void ofxColorQuantizerHelper::refresh_Files()
+void ofxColorQuantizerHelper::refreshFiles()
 {
 	// Load dragged images folder
 	ofLogNotice("ofxColorQuantizerHelper") << "list files " << pathFolerDrag;
@@ -653,7 +661,7 @@ void ofxColorQuantizerHelper::refresh_Files()
 }
 
 //--------------------------------------------------------------
-void ofxColorQuantizerHelper::refresh_FilesSorting(std::string name)
+void ofxColorQuantizerHelper::refreshFilesSorting(std::string name)
 {
 	ofLogNotice("ofxColorQuantizerHelper") << "----------------- SORTING FILES-----------------";
 	ofLogNotice("ofxColorQuantizerHelper") << "Search Iindex for file:";
@@ -722,12 +730,31 @@ void ofxColorQuantizerHelper::setup()
 	//--
 
 	// Layout
-	if (bUseNativeWidgets) {
+	if (bUseNativeWidgets) 
+	{
 		setPosition(glm::vec2(370, 650));
 		setSize(glm::vec2(1000, 700));//?
 	}
 
-	//-
+	//--
+
+	//if (bUseNativeWidgets)
+	{
+		infoHelp = "IMAGE QUANTIZER \n\n";
+		infoHelp += "H                   HELP";
+		infoHelp += "\n";
+		infoHelp += "   +|-              AMOUNT COLORS";
+		infoHelp += "\n";
+		infoHelp += "Left|Right          BROWSE IMAGES";
+		infoHelp += "\n";
+		infoHelp += "  Up|Down           SORT TYPE";
+		infoHelp += "\n";
+		//infoHelp += "Path/Url         " + currentImage_name.get();
+		infoHelp += "\n";
+		infoHelp += "Drag images here!";
+	}
+
+	//--
 
 #ifdef USE_OFX_GUI__QUANTIZER
 	ofxSurfingHelpers::setThemeDark_ofxGui();
@@ -740,8 +767,6 @@ void ofxColorQuantizerHelper::setup()
 	thumbsSize.set("Size", 100, 40, 300);
 	thumbsSpacing.set("Spacing", 5, 0, 20);
 	thumbsBorder.set("border", 1, 0, 10);
-
-	//indexBrowser.set("Index", -1, 0, 1);
 
 	params_Thumbs.add(thumbsSize);
 	params_Thumbs.add(thumbsSpacing);
@@ -785,7 +810,7 @@ void ofxColorQuantizerHelper::setup()
 	ofAddListener(parameters.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
 	ofAddListener(parameters_Advanced.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
 
-	//-
+	//--
 
 #ifdef USE_OFX_GUI__QUANTIZER
 	gui.setup("ofxColorQuantizerHelper");
@@ -801,7 +826,7 @@ void ofxColorQuantizerHelper::setup()
 
 	//--
 
-	refresh_Files();
+	refreshFiles();
 
 	//----
 
@@ -827,25 +852,9 @@ void ofxColorQuantizerHelper::setup()
 	//params_AppSettings.add(bResponsive);
 #endif
 
+	doReset();
+
 	loadAppSettings(params_AppSettings, path_Global + path_AppSettings);
-
-	//-
-
-	//if (bUseNativeWidgets)
-	{
-		infoHelp = "IMAGE QUANTIZER \n\n";
-		infoHelp += "H                   HELP";
-		infoHelp += "\n";
-		infoHelp += "   +|-              AMOUNT COLORS";
-		infoHelp += "\n";
-		infoHelp += "Left|Right          BROWSE IMAGES";
-		infoHelp += "\n";
-		infoHelp += "  Up|Down           SORT TYPE";
-		infoHelp += "\n";
-		//infoHelp += "Path/Url         " + currentImage_name.get();
-		infoHelp += "\n";
-		infoHelp += "Drag images here!";
-	}
 }
 
 //--------------------------------------------------------------
@@ -1050,7 +1059,7 @@ void ofxColorQuantizerHelper::buildQuantize()
 
 		//--
 
-		rebuildSorting();
+		buildSorting();
 	}
 }
 
@@ -1106,7 +1115,7 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 
 		bUpdate = true;
 
-		refreshImageTexture();
+		refreshImageGuiTexture();
 	}
 
 	// Sort
@@ -1117,7 +1126,7 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 			return;
 		}
 
-		rebuildSorting();
+		buildSorting();
 	}
 
 	else if (_name == bReBuild.getName())
@@ -1150,7 +1159,7 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 }
 
 //--------------------------------------------------------------
-void ofxColorQuantizerHelper::rebuildSorting()
+void ofxColorQuantizerHelper::buildSorting()
 {
 	palette.clear();
 
@@ -1209,9 +1218,9 @@ void ofxColorQuantizerHelper::rebuildSorting()
 
 	//--
 
-	// pointers back to 'communicate externally'
+	// Pointers back to 'communicate externally'
 
-	// palette
+	// Palette
 	int szPalette = palette.size();
 
 	if (szPalette > 0 && myPalette_BACK != nullptr)
@@ -1222,36 +1231,36 @@ void ofxColorQuantizerHelper::rebuildSorting()
 			(*myPalette_Name_BACK) = imageName;
 		}
 
-		//-
+		//--
 
-		// set BACK palette colors
+		// Set BACK palette colors
 		myPalette_BACK->clear();
 		myPalette_BACK->resize(szPalette);
 
-		//// 1. get unsorted palette
+		//// 1. Get unsorted palette
 		//(*myPalette_BACK) = palette;
 
-		// 2. get palette sorted
+		// 2. Get palette sorted
 		for (int col = 0; col < palette.size(); col++)
 		{
 			(*myPalette_BACK)[col] = colorMapSortable[col].color;
 		}
 
-		// mark update flag
+		// Mark update flag
 		if (bUpdated_Palette_BACK != nullptr)
 		{
 			(*bUpdated_Palette_BACK) = true;
 		}
 	}
 
-	// color
+	// Color
 	if (szPalette > 0 && myColor_BACK != nullptr)
 	{
-		// set BACK color clicked
+		// Set BACK color clicked
 		//myColor_BACK->set(colorMapSortable[0].color); // auto get first color from palette
 		myColor_BACK->set(palette[0]); // auto get first color from palette
 
-		// flag updater color ready
+		// Flag updater color ready
 		if (bUpdated_Color_BACK != nullptr)
 		{
 			(*bUpdated_Color_BACK) = true;
@@ -1262,11 +1271,14 @@ void ofxColorQuantizerHelper::rebuildSorting()
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::buildFromImageFile(std::string path, int num)
 {
+	//return;
+
 	//TODO: improve with threading load..
 
 	//quantizeImage(pathFolder + path, num);
 	quantizeImage(path, num);
-	buildQuantize();
+
+	//buildQuantize();
 }
 
 //--------------------------------------------------------------
@@ -1274,7 +1286,8 @@ void ofxColorQuantizerHelper::buildFromImageUrl(std::string url, int num)
 {
 	//TODO: improve with threading load and some HTTP image browsing api..
 	quantizeImage(url, num);
-	buildQuantize();
+
+	//buildQuantize();
 }
 
 //--------------------------------------------------------------
@@ -1570,7 +1583,7 @@ void ofxColorQuantizerHelper::dragEvent(ofDragInfo& eventArgs)
 		//// workflow
 
 		//// refresh dir
-		//refresh_Files();
+		//refreshFiles();
 
 		////-
 
@@ -1581,7 +1594,7 @@ void ofxColorQuantizerHelper::dragEvent(ofDragInfo& eventArgs)
 		//-
 
 		// workflow
-		if (fileName != "-1") refresh_FilesSorting(fileName);
+		if (fileName != "-1") refreshFilesSorting(fileName);
 	}
 }
 
@@ -1621,7 +1634,9 @@ void ofxColorQuantizerHelper::saveAppSettings(ofParameterGroup& g, std::string p
 	settings.save(path);
 }
 
-// pointers back to 'communicate externally'
+//--
+
+// Pointers back to 'communicate externally'
 
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::setColor_BACK(ofColor& c)
@@ -1675,7 +1690,7 @@ void ofxColorQuantizerHelper::addImage(std::string path)
 	ofxSurfingHelpers::CheckFolder(pathFolerDrag);
 	file.copyTo(ofToDataPath(pathFolerDrag + fileName));
 
-	refresh_FilesSorting(fileName);
+	refreshFilesSorting(fileName);
 }
 
 //--------------------------------------------------------------
