@@ -12,6 +12,7 @@ void ofApp::setup()
 
 	colorQuantizer.setUiPtr(&ui);
 	colorQuantizer.setup();
+	colorQuantizer.setEnableNativeWidgets(false);
 }
 
 //--------------------------------------------------------------
@@ -24,8 +25,11 @@ void ofApp::draw() {
 	{
 		if (ui.BeginWindow("ofApp"))
 		{
-			ui.Add(colorQuantizer.bGui_Picture, OFX_IM_TOGGLE_ROUNDED);
-			ui.Add(colorQuantizer.bGui_Library, OFX_IM_TOGGLE_ROUNDED);
+			ui.Add(colorQuantizer.bGui, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
+			if (colorQuantizer.bGui) {
+				ui.Add(colorQuantizer.bGui_Picture, OFX_IM_TOGGLE_ROUNDED);
+				ui.Add(colorQuantizer.bGui_Library, OFX_IM_TOGGLE_ROUNDED);
+			}
 			ui.EndWindow();
 		}
 

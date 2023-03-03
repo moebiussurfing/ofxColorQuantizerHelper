@@ -22,11 +22,10 @@
 
 //--
 
-#define PANEL_WIDGETS_WIDTH 250
-#define PANEL_WIDGETS_HEIGHT 100
-
-#define BUTTON_BIG_HEIGHT 50
-#define NUM_QUANTIZER_COLORS_PER_ROW 4
+//#define PANEL_WIDGETS_WIDTH 250
+//#define PANEL_WIDGETS_HEIGHT 100
+//#define BUTTON_BIG_HEIGHT 50
+//#define NUM_QUANTIZER_COLORS_PER_ROW 4
 
 #ifdef USE_OFX_GUI__QUANTIZER
 #include "ofxGui.h"
@@ -62,9 +61,14 @@ class ofxColorQuantizerHelper
 	//	vector<ofTexture> textureSource;
 	//	vector<GLuint> textureSourceID;
 	//void draw_Gui2();
+	
+private:
+	bool bUseNativeWidgets = true;
 
 public:
-	//ofParameter<bool> bGui_Advanced{ "Show Advanced", false };
+	void setEnableNativeWidgets(bool b) {
+		bUseNativeWidgets = b;
+	}
 
 public:
 	void draw_ImGuiWidgets();
@@ -126,7 +130,7 @@ public:
 	void loadNext();
 	void loadPrev();
 	void randomPalette();
-	
+
 	void doReset() {
 		thumbsSize = 200;
 		thumbsSpacing = 2;
@@ -148,18 +152,17 @@ public:
 		}
 	}
 
-private:
+	//private:
 	//ofParameter<bool> bGui_Info;
-
-#ifdef USE_OFX_GUI__QUANTIZER
-	ofParameter<bool> bGui;
-#endif
 
 public:
 	std::string infoHelp;//key commands
 
+	//--
 
-#ifdef USE_OFX_GUI__QUANTIZER
+//#ifdef USE_OFX_GUI__QUANTIZER
+	ofParameter<bool> bGui;
+
 public:
 	void setVisible(bool b)
 	{
@@ -169,10 +172,10 @@ public:
 	{
 		bGui = !bGui;
 	}
-#endif
+	//#endif
 
-	//build palette from already quantized and sorted colors
-	//void rebuildMap();
+		//build palette from already quantized and sorted colors
+		//void rebuildMap();
 
 	ofParameterGroup getParameters() {
 		return parameters;
