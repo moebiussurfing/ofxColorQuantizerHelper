@@ -316,7 +316,7 @@ private:
 	bool isVisible_gui = true;
 
 	ofxColorQuantizer colorQuantizer;
-	void quantizeImage(std::string imageName, int amountColors);
+	void loadImageAndQuantize(std::string imageName, int amountColors);
 
 public:
 	int getAmountFiles() {

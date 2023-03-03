@@ -13,7 +13,7 @@ void ofxColorQuantizerHelper::refreshImageGuiTexture()
 
 	ofDisableArbTex();
 
-	//TODO: could improve reusing this image for quantizer too..
+	//TODO: could improve reusing this image from the quantizer too..
 	if (image.isAllocated())
 		tex = image.getTexture();
 	else
@@ -207,9 +207,9 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 				if (palette.size() > 0 && myColor_BACK != nullptr)
 				{
 					// set BACK color clicked
-					//myColor_BACK->set(colorMapSortable[n].color);
+					myColor_BACK->set(colorMapSortable[n].color);
 					//myColor_BACK->set(palette[n]); // auto get first color from palette
-					myColor_BACK->set(colorMap[n]); // auto get first color from palette
+					//myColor_BACK->set(colorMap[n]); // auto get first color from palette
 
 					// flag updater color ready
 					if (bUpdated_Color_BACK != nullptr)
@@ -1032,7 +1032,9 @@ void ofxColorQuantizerHelper::draw()
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::buildQuantize()
 {
-	if (isLoadedImage)
+	//return;
+
+	if (isLoadedImage && imageCopy.isAllocated())
 	{
 		int _max = amountColors;
 		//int _max = amountColors + 1;
@@ -1068,30 +1070,34 @@ void ofxColorQuantizerHelper::buildQuantize()
 }
 
 //--------------------------------------------------------------
-void ofxColorQuantizerHelper::quantizeImage(std::string imgName, int _numColors)
+void ofxColorQuantizerHelper::loadImageAndQuantize(std::string _pathImg, int _numColors)
 {
-	isLoadedImage = false;
+	if (amountColors.get() != _numColors) {
+		amountColors = _numColors;
+	}
 
-	amountColors = _numColors;
-
-	if (image.load(imgName))
+	isLoadedImage = image.load(_pathImg);
+	if (isLoadedImage)
 	{
-		isLoadedImage = true;
+		ofLogNotice("ofxColorQuantizerHelper") << "loadImageAndQuantize: " << _pathImg;
 
+		// speed up using an smaller image
 		imageCopy.clear();
-		imageCopy = image;//speed up
-		//imageCopy.load(imgName);
+		imageCopy = image;
+		//imageCopy.load(_pathImg);
 
+		//TODO:
 		// resize smaller to speed up quantizer
-		float factor = 4.f;
+		//float factor = ofMap(image.getWidth(), );
+		//float factor = 4.f;
+		float factor = 8.f;
 		imageCopy.resize(imageCopy.getWidth() / factor, imageCopy.getHeight() / factor);
 
 		buildQuantize();
 	}
 	else
 	{
-		ofLogError("ofxColorQuantizerHelper") << "image file not found!";
-		isLoadedImage = false;
+		ofLogError("ofxColorQuantizerHelper") << "image file not found! " << _pathImg;
 	}
 }
 
@@ -1178,8 +1184,6 @@ void ofxColorQuantizerHelper::buildSorting()
 	palette.clear();
 	palette.resize(sz);
 
-	//palette = colorQuantizer.getColors();
-
 	for (int i = 0; i < sortedColors.size(); i++)
 	{
 		palette[i] = sortedColors[i].color;
@@ -1193,7 +1197,7 @@ void ofxColorQuantizerHelper::buildSorting()
 		colorMap[i] = palette[i];
 	}
 
-	// colorNameMap
+	// Color Map
 	for (unsigned int i = 0; i < sz; i++)
 	{
 		map<int, ofColor>::iterator mapEntry = colorMap.begin();
@@ -1272,7 +1276,7 @@ void ofxColorQuantizerHelper::buildSorting()
 		//myColor_BACK->set(palette[0]); // auto get first color from palette
 		//myColor_BACK->set(colorMap[0]); // auto get first color from palette
 
-		// Flag updater color ready
+		// Flag updater color ready to refresh
 		if (bUpdated_Color_BACK != nullptr)
 		{
 			(*bUpdated_Color_BACK) = true;
@@ -1287,19 +1291,15 @@ void ofxColorQuantizerHelper::buildFromImageFile(std::string path, int num)
 
 	//TODO: improve with threading load..
 
-	//quantizeImage(pathFolder + path, num);
-	quantizeImage(path, num);
-
-	//buildQuantize();
+	loadImageAndQuantize(path, num);
+	//loadImageAndQuantize(pathFolder + path, num);
 }
 
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::buildFromImageUrl(std::string url, int num)
 {
 	//TODO: improve with threading load and some HTTP image browsing api..
-	quantizeImage(url, num);
-
-	//buildQuantize();
+	loadImageAndQuantize(url, num);
 }
 
 //--------------------------------------------------------------
