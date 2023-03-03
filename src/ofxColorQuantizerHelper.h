@@ -3,12 +3,12 @@
 /*
 
 	TODO:
-	
+
 	fix weird flick on image preview
 
 	add threading for loading file picture.
-	
-	small library window breaks grid layout. 
+
+	small library window breaks grid layout.
 		only showing first 4 picts..
 
 	allow drag internet browser images.
@@ -99,7 +99,7 @@ private:
 	//ofParameter<int> sizeLibColBox;
 
 	int currentImage_PRE;
-	
+
 	ofParameterGroup params_Thumbs;
 	ofParameter<int> thumbsSize;
 	ofParameter<int> thumbsSpacing;
@@ -205,7 +205,7 @@ public:
 
 private:
 	void refreshFiles();
-	
+
 	ofTrueTypeFont font;
 	ofTrueTypeFont font2;
 
@@ -307,7 +307,7 @@ private:
 	std::string* myPalette_Name_BACK = nullptr;
 	bool* bUpdated_Palette_BACK = nullptr;
 	bool* bUpdated_Color_BACK = nullptr;
-	
+
 	void doUpdatePointers();
 
 
@@ -325,6 +325,11 @@ private:
 
 	ofxColorQuantizer colorQuantizer;
 	void loadImageAndQuantize(std::string imageName, int amountColors);
+
+	void doSortNext() {
+		sortedType = sortedType.get() + 1;
+		if (sortedType > 4) sortedType = 1;
+	};
 
 public:
 	int getAmountFiles() {

@@ -166,9 +166,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			{
 				ofLogNotice("ofxColorQuantizerHelper") << "Image Pressed";
 				// workflow
-				// next sort
-				sortedType++;
-				//if (sortedType > 4) sortedType = 1;
+				doSortNext();
 			}
 		}
 
@@ -227,8 +225,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 
 		if (ui->AddButton("SORT", OFX_IM_BUTTON, 1))
 		{
-			sortedType++;
-			if (sortedType > 4) sortedType = 1;
+			doSortNext();
 		}
 
 		ui->AddSpacing();
