@@ -1,7 +1,7 @@
 #include "ofApp.h"
 
 //--------------------------------------------------------------
-void ofApp::setup() 
+void ofApp::setup()
 {
 	ofSetFrameRate(60);
 
@@ -11,13 +11,17 @@ void ofApp::setup()
 	ui.setup();
 
 	colorQuantizer.setUiPtr(&ui);
-	colorQuantizer.setup();
 	colorQuantizer.setEnableNativeWidgets(false);
+	colorQuantizer.setup();
+
+	// reference first or clicked palette color
+	colorQuantizer.setColor_BACK(c);
 }
 
 //--------------------------------------------------------------
-void ofApp::draw() {
-	ofBackground(100, 100, 100);
+void ofApp::draw()
+{
+	ofBackground(c);
 
 	colorQuantizer.draw();
 
@@ -33,13 +37,12 @@ void ofApp::draw() {
 			ui.EndWindow();
 		}
 
-		colorQuantizer.draw_ImGuiWidgets();
+		colorQuantizer.drawImGuiWindows();
 	}
 	ui.End();
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key) {
-
-	if (key == 'G') colorQuantizer.setToggleActive();
+void ofApp::keyPressed(int key) 
+{
 }

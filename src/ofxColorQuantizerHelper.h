@@ -3,8 +3,11 @@
 /*
 
 	TODO:
+	
 	add threading for loading file picture.
-
+	
+	small library window breaks grid layout 
+		only showing first 4 picts..
 
 */
 
@@ -39,6 +42,7 @@
 #include "ofxOpenCv.h"
 #include "ofxColorQuantizer.h"
 #include "ofxSurfingHelpers.h"
+#include "ofxThreadedImageLoader.h"
 
 //TODO:
 //#include "imgInspect.h"
@@ -53,24 +57,20 @@ typedef struct
 
 class ofxColorQuantizerHelper
 {
-	//--
+	//-
 
-	//TODO:
-	//thumbs. required multiple ImGui contexts here
-	//public:
-	//	vector<ofTexture> textureSource;
-	//	vector<GLuint> textureSourceID;
-	//void draw_Gui2();
-	
+public:
+	ofxColorQuantizerHelper();
+	~ofxColorQuantizerHelper();
+
+	void setup();
+	void draw();
+	void exit();
+
+	void drawImGuiWindows() { draw_ImGuiWidgets(); };
+
+
 private:
-	bool bUseNativeWidgets = true;
-
-public:
-	void setEnableNativeWidgets(bool b) {
-		bUseNativeWidgets = b;
-	}
-
-public:
 	void draw_ImGuiWidgets();
 	void draw_ImGuiPicture();
 	void draw_ImGuiLibrary();
@@ -78,7 +78,7 @@ public:
 private:
 	ofTexture tex;
 	ofFbo fbo;
-	void refresh_QuantizerImage();
+	void refreshImageTexture();
 
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
 	//TODO:
@@ -111,11 +111,24 @@ public:
 
 	//--
 
+public:
 	ofParameter<bool> bGui_Library;
-	//ofParameter<bool> bResponsive;
+
+private:
 	ofParameter<bool> bAutoResizeLib;
+	//ofParameter<bool> bResponsive;
 
 #endif
+
+	//--
+
+private:
+	bool bUseNativeWidgets = true;
+
+public:
+	void setEnableNativeWidgets(bool b) {
+		bUseNativeWidgets = b;
+	}
 
 	//--
 
@@ -131,6 +144,7 @@ public:
 	void loadPrev();
 	void randomPalette();
 
+private:
 	void doReset() {
 		thumbsSize = 200;
 		thumbsSpacing = 2;
@@ -138,7 +152,7 @@ public:
 	};
 
 private:
-	//easy callback
+	// easy callback
 	bool bUpdate = false;
 
 public:
@@ -155,12 +169,13 @@ public:
 	//private:
 	//ofParameter<bool> bGui_Info;
 
-public:
+private:
+	//public:
 	std::string infoHelp;//key commands
 
 	//--
 
-//#ifdef USE_OFX_GUI__QUANTIZER
+public:
 	ofParameter<bool> bGui;
 
 public:
@@ -174,32 +189,24 @@ public:
 	}
 	//#endif
 
-		//build palette from already quantized and sorted colors
-		//void rebuildMap();
+	//build palette from already quantized and sorted colors
+	//void rebuildMap();
 
 	ofParameterGroup getParameters() {
 		return parameters;
 	}
 
-	//-
-
-public:
-	ofxColorQuantizerHelper();
-	~ofxColorQuantizerHelper();
-
-	void setup();
-	void draw();
-	void exit();
-
 	//--
 
 	// API
+
 private:
 	void refresh_Files();
 	ofTrueTypeFont font;
 	ofTrueTypeFont font2;
 
-public:
+	//public:
+private:
 	bool isActivated() {
 		return isActive;
 	}
@@ -226,17 +233,15 @@ public:
 		}
 	}
 
+	//private:
+	//ofParameter<bool> bottomMode;
+	//public:
+	//	void setBottomMode(bool b)
+	//	{
+	//		bottomMode = b;
+	//	}
+
 private:
-
-	ofParameter<bool> bottomMode;
-
-public:
-
-	void setBottomMode(bool b)
-	{
-		bottomMode = b;
-	}
-
 	void setEnableVisibleHelpInfo(bool b)
 	{
 		bGui_Help = b;
@@ -262,8 +267,10 @@ public:
 
 	//--
 
+public:
+
 	//TODO:
-	vector<ofColor> getPalette(bool sorted = true)
+	vector<ofColor> getPalette(bool sorted = true) const
 	{
 		if (!sorted) return palette;
 
@@ -281,7 +288,7 @@ public:
 
 	//--
 
-	// pointers back to 'communicate externally'
+	// Pointers back to 'communicate externally'
 	void setPalette_BACK_Name(std::string& n);
 	void setPalette_BACK(vector<ofColor>& p);
 	void setPalette_BACK_RefreshPalette(bool& b);
@@ -289,14 +296,14 @@ public:
 	void setColor_BACK_Refresh(bool& b);
 
 private:
-	//build palette from already quantized and sorted colors
+	// Build palette from already quantized and sorted colors
 	void rebuildMap();
 
 private:
 
 	//--
 
-	// pointers back to 'communicate externally'
+	// Pointers back to 'communicate externally'
 	ofColor* myColor_BACK = nullptr;
 	vector<ofColor>* myPalette_BACK = nullptr;
 	std::string* myPalette_Name_BACK = nullptr;
@@ -353,7 +360,7 @@ private:
 
 public:
 	void build();
-	//split from quantizer to avoid reload image
+	// split from quantizer to avoid reload image
 
 	//--
 
@@ -389,7 +396,7 @@ private:
 
 	void Changed_parameters(ofAbstractParameter& e);
 
-	// main palette
+	// Main palette
 	vector<ofColor> palette;
 
 	float boxBgSize;
@@ -400,7 +407,7 @@ private:
 
 	void kMeansTest();
 
-	// drag and drop images
+	// Drag and drop images
 	vector<ofImage> draggedImages;
 	ofPoint dragPt;
 	void draw_imageDragged();
@@ -413,12 +420,15 @@ public:
 	ofParameter<bool> bGui_Help;
 	ofParameter<bool> bGui_WidgetInfo;
 	ofParameter<bool> bGui_Picture;
+	ofParameter<bool> bGuiLinked;
 
 public:
 	void dragEvent(ofDragInfo& eventArgs);
+
+private:
 	void addImage(std::string path);
 	void refresh_FilesSorting(std::string name);
-	// after saving new preset, refresh files and select the just saved preset
+	// After saving new preset, refresh files and select the just saved preset
 
 	void addDragListeners();
 	void removeDragListeners();

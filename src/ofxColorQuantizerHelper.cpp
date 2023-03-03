@@ -2,10 +2,12 @@
 
 #ifdef USE_IM_GUI__QUANTIZER
 //--------------------------------------------------------------
-void ofxColorQuantizerHelper::refresh_QuantizerImage()
+void ofxColorQuantizerHelper::refreshImageTexture()
 {
-	// load ofImage
-	ofLogNotice("ofxColorQuantizerHelper") << " image path: " << getImagePath();
+	ofLogNotice("ofxColorQuantizerHelper") << "refreshImageTexture()";
+
+	// loaded ofImage
+	//ofLogNotice("ofxColorQuantizerHelper") << " image path: " << getImagePath();
 
 	bool b = ofGetUsingArbTex();
 
@@ -23,7 +25,7 @@ void ofxColorQuantizerHelper::refresh_QuantizerImage()
 
 	if (b) ofEnableArbTex();
 
-	fbo.begin();//draw once only
+	fbo.begin(); // draw once only
 	ofClear(0, 0, 0, 0);
 	tex.draw(0, 0);
 	fbo.end();
@@ -58,6 +60,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 		if (bGui_Library && ui->isMaximized())
 		{
 			ui->Indent();
+			ui->Add(bGuiLinked, OFX_IM_TOGGLE_ROUNDED_MINI);
 			ui->Add(bAutoResizeLib, OFX_IM_TOGGLE_ROUNDED_MINI);
 			ui->Unindent();
 		}
@@ -77,7 +80,11 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 
 		if (!imageNames.empty())
 		{
-			if (ui->isMaximized()) ui->AddLabelBig("FILE");
+			if (ui->isMaximized())
+			{
+				ui->AddLabelBig("FILE");
+			}
+
 			ui->AddSpacing();
 
 			if (ui->isMaximized())
@@ -110,7 +117,10 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 
 		ui->AddSpacing();
 
-		if (ui->isMaximized()) ui->AddLabelBig("PICTURE");
+		//if (ui->isMaximized()) ui->AddLabelBig("PICTURE");
+
+		// Pict name
+		//if (ui->isMaximized()) ui->AddLabel(currentImage_name.get());
 
 		// 2. Image preview
 
@@ -162,9 +172,6 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			}
 		}
 
-		//// label name
-		//ImGui::Text(currentImage_name.get().c_str());
-
 		//--
 
 		ui->AddSpacing();
@@ -192,7 +199,21 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			ImGui::SameLine(0, 0);
 
 			// box colors
-			if (ImGui::ColorButton("##paletteQuantizer", p[n], colorEdiFlags, ImVec2(wb, hb * 2))) {}
+			if (ImGui::ColorButton("##paletteQuantizer", p[n], colorEdiFlags, ImVec2(wb, hb * 2)))
+			{
+				// Assign color back!
+				if (palette.size() > 0 && myColor_BACK != nullptr)
+				{
+					// set BACK color clicked
+					myColor_BACK->set(colorMapSortable[n].color);
+
+					// flag updater color ready
+					if (bUpdated_Color_BACK != nullptr)
+					{
+						(*bUpdated_Color_BACK) = true;
+					}
+				}
+			}
 
 			ImGui::PopID();
 		}
@@ -256,24 +277,20 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 				//ui->Add(bGui_Library, OFX_IM_TOGGLE_SMALL, 1);
 				if (bGui_Library)
 				{
-					//ui->Add(bResponsive, OFX_IM_TOGGLE_SMALL, 1);
-					//ofxImGui::AddParameter(bGui_Library);
+					if (ui->isMaximized()) ui->AddLabelBig("THUMBS");
 
-					//if (bGui_Library)
+					//if (!bResponsive)
 					{
-						//if (!bResponsive)
+						SurfingGuiTypes t = OFX_IM_HSLIDER_MINI;
+						//SurfingGuiTypes t = OFX_IM_STEPPER;
+
+						ui->Add(thumbsSize, t);
+						ui->Add(thumbsSpacing, t);
+						ui->Add(thumbsBorder, t);
+
+						if (ui->AddButton("Fit", OFX_IM_TOGGLE_SMALL, 2))
 						{
-							SurfingGuiTypes t = OFX_IM_HSLIDER_MINI;
-							//SurfingGuiTypes t = OFX_IM_STEPPER;
-
-							ui->Add(thumbsSize, t);
-							ui->Add(thumbsSpacing, t);
-							ui->Add(thumbsBorder, t);
-
-							if (ui->AddButton("Fit", OFX_IM_TOGGLE_SMALL, 2))
-							{
-								thumbsSize = __widthPicts;
-							}
+							thumbsSize = __widthPicts;
 						}
 					}
 
@@ -307,10 +324,28 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 {
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
+
 	if (bGui_Library)
 	{
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
-		if (bAutoResizeLib) window_flags += ImGuiWindowFlags_AlwaysAutoResize;
+		if (bAutoResizeLib)
+		{
+			window_flags += ImGuiWindowFlags_AlwaysAutoResize;
+		}
+
+		float wmax = ofGetWidth();
+		float hmax = ofGetHeight() - 50;
+
+		// workround fix
+		bool bFix = true;
+		if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize * 2 + 45, 400), ImVec2(wmax, hmax));
+
+		ImGuiCond cond = ImGuiCond_FirstUseEver;
+		ImGui::SetNextWindowSize(ImVec2(400, hmax), cond);
+
+		if (bGui_Picture && bGuiLinked) ui->setNextWindowAfterWindowNamed(bGui_Picture);
+
+		//--
 
 		if (ui->BeginWindow(bGui_Library, window_flags))
 		{
@@ -331,31 +366,32 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 
 			//--
 
-			//ImVec2 button_sz((float)thumbsSize.get(), (float)thumbsSize.get());
 			ImVec2 button_sz;
 			float _ww;
 			float _hh, _ratio;
+
+			//ImVec2 button_sz((float)thumbsSize.get(), (float)thumbsSize.get());
+
 			//if (bResponsive.get())
 			//{
 			//	static int sizeThumb_ = 1;
 			//	if (sizeThumb_ != thumbsSize.get())
 			//	{
 			//		sizeThumb_ = thumbsSize;
-
 			//		//thumbsSize = __widthPicts;
 			//		//_ww = thumbsSize;
-
 			//		_ww = sizeThumb_;
 			//	}
 			//	else _ww = thumbsSize;
 			//}
 			//else
-			{
-				//if (bResponsive) _ww = __widthPicts;
-				//else _ww = (float)thumbsSize.get();
+			//{
+			//	//if (bResponsive) _ww = __widthPicts;
+			//	//else _ww = (float)thumbsSize.get();
+			//	_ww = (float)thumbsSize.get();
+			//}
 
-				_ww = (float)thumbsSize.get();
-			}
+			_ww = (float)thumbsSize.get();
 
 			//--
 
@@ -365,7 +401,7 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 
 			for (int n = 0; n < _amountImages; n++)
 			{
-				// respect aspect ratio images with width fit
+				// Respect aspect ratio images with width fit
 				_ratio = textureSource[n].getHeight() / textureSource[n].getWidth();
 				_hh = _ww * _ratio;
 				button_sz = ImVec2(_ww, _hh);
@@ -374,7 +410,7 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 
 				ImGui::PushID(n);
 
-				// spacing and border
+				// Tweak spacing and border
 				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, (float)thumbsBorder.get());
 				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
 				ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
@@ -394,7 +430,7 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 					//ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color1);
 					//ImGui::PushStyleColor(ImGuiCol_Button, color1);
 				}
-				else // not selected
+				else // when not selected
 				{
 					const ImVec4 color2 = style.Colors[ImGuiCol_Button]; // do not changes the color
 					ImGui::PushStyleColor(ImGuiCol_Border, color2);
@@ -412,14 +448,15 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 
 					//--
 
+					// that calls the callback!
 					currentImage = indexBrowser;
 				}
 
 				//--
 
 				// Customize colors
-				ImGui::PopStyleColor();//border
-				//ImGui::PopStyleColor();//hovered
+				ImGui::PopStyleColor(); // border
+				//ImGui::PopStyleColor(); // hovered
 
 				float last_button_x2 = ImGui::GetItemRectMax().x;
 				float next_button_x2 = last_button_x2 + style.ItemSpacing.x + button_sz.x;
@@ -427,7 +464,7 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 				// Expected position if next button was on same line
 				if (n + 1 < _amountImages && next_button_x2 < _wx2) ui->SameLine();
 
-				// spacing and border
+				// Spacing and border
 				ImGui::PopStyleVar();
 				ImGui::PopStyleVar();
 				ImGui::PopStyleVar();
@@ -502,12 +539,6 @@ void ofxColorQuantizerHelper::loadPrev()
 	else currentImage--;
 
 	ofLogNotice("ofxColorQuantizerHelper") << "loadPrev: " << ofToString(currentImage);
-	//if (dir.size() > 0 && currentImage < dir.size() - 1)
-	//{
-	//	imageName = dir.getName(currentImage);
-	//	imageName_path = dir.getPath(currentImage);
-	//	buildFromImageFile(imageName_path, amountColors);
-	//}
 }
 
 //--------------------------------------------------------------
@@ -517,12 +548,6 @@ void ofxColorQuantizerHelper::loadNext()
 	else if (currentImage == dir.size() - 1) currentImage = 0;
 
 	ofLogNotice("ofxColorQuantizerHelper") << "loadNext: " << ofToString(currentImage);
-	//if (dir.size() > 0 && currentImage < dir.size())
-	//{
-	//	imageName = dir.getName(currentImage);
-	//	imageName_path = dir.getPath(currentImage);
-	//	buildFromImageFile(imageName_path, amountColors);
-	//}
 }
 
 //--------------------------------------------------------------
@@ -671,8 +696,10 @@ void ofxColorQuantizerHelper::setup()
 	//--
 
 	// Layout
-	setPosition(glm::vec2(370, 650));
-	setSize(glm::vec2(1000, 700));//?
+	if (bUseNativeWidgets) {
+		setPosition(glm::vec2(370, 650));
+		setSize(glm::vec2(1000, 700));//?
+	}
 
 	//-
 
@@ -687,9 +714,8 @@ void ofxColorQuantizerHelper::setup()
 	thumbsSize.set("Size", 100, 40, 300);
 	thumbsSpacing.set("Spacing", 5, 0, 20);
 	thumbsBorder.set("border", 1, 0, 10);
-	//indexBrowser.set("LUT THUMB Index", -1, 0, 1);
-	//nameMat.set("LUT name", "");
-	//thumbsSize.set("THUMB SIZE", 75, 40, 300);
+
+	//indexBrowser.set("Index", -1, 0, 1);
 
 	params_Thumbs.add(thumbsSize);
 	params_Thumbs.add(thumbsSpacing);
@@ -710,6 +736,7 @@ void ofxColorQuantizerHelper::setup()
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
 	parameters.add(bGui_Library.set("LIBRARY", true));
 	parameters.add(bGui_Picture.set("PICTURE", true));
+	parameters.add(bGuiLinked.set("Link", true));
 	parameters.add(thumbsSize);
 	//parameters.add(bResponsive.set("Responsive", true));
 
@@ -772,6 +799,7 @@ void ofxColorQuantizerHelper::setup()
 	params_AppSettings.add(bGui);
 	params_AppSettings.add(bGui_Picture);
 	params_AppSettings.add(bGui_Library);
+	params_AppSettings.add(bGuiLinked);
 	params_AppSettings.add(bAutoResizeLib);
 	params_AppSettings.add(params_Thumbs);
 	//params_AppSettings.add(bResponsive);
@@ -943,8 +971,8 @@ void ofxColorQuantizerHelper::draw()
 	{
 		if (bGui_Help)
 		{
-			ofPushStyle();
 			std::string str = infoHelp;
+			ofPushStyle();
 			ofPushMatrix();
 			{
 				// Center box
@@ -1019,7 +1047,7 @@ void ofxColorQuantizerHelper::quantizeImage(std::string imgName, int _numColors)
 		imageCopy = image;//speed up
 		//imageCopy.load(imgName);
 
-		// resize to speed up
+		// resize smaller to speed up quantizer
 		imageCopy.resize(imageCopy.getWidth() / 4.f, imageCopy.getHeight() / 4.f);
 
 		build();
@@ -1038,7 +1066,27 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 
 	ofLogNotice("ofxColorQuantizerHelper") << _name << " : " << e;
 
-	if (_name == sortedType.getName())
+	if (0) {}
+
+	else if (_name == currentImage.getName())
+	{
+		ofLogNotice("ofxColorQuantizerHelper") << "currentImage: " << ofToString(currentImage);
+
+		if (dir.size() > 0 && currentImage <= dir.size() - 1)
+		{
+			imageName = dir.getName(currentImage);
+			currentImage_name = imageName;
+			imageName_path = dir.getPath(currentImage);
+
+			buildFromImageFile(imageName_path, amountColors);
+		}
+
+		bUpdate = true;
+
+		refreshImageTexture();
+	}
+
+	else if (_name == sortedType.getName())
 	{
 		//sortedType = ofClamp(sortedType, 1, 4);
 		if (sortedType < 1 && sortedType > 4) return;
@@ -1067,13 +1115,13 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 
 		//--
 
-		// pointers back to 'communicate externally'
+		// Pointers back to 'communicate externally'
 
 		int sizePalette = palette.size();
 
 		if (sizePalette > 0 && myPalette_BACK != nullptr)
 		{
-			// set BACK name clicked
+			// Set BACK name clicked
 			if (myPalette_Name_BACK != nullptr)
 			{
 				//TODO: this should be done in all name setters..
@@ -1087,26 +1135,26 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 
 			//-
 
-			// set BACK palette colors
+			// Set BACK palette colors
 			myPalette_BACK->clear();
 			myPalette_BACK->resize(sizePalette);
 
-			//// 1. get unsorted palette
+			//// 1. Get unsorted palette
 			//(*myPalette_BACK) = palette;
 
-			// 2. get palette sorted
+			// 2. Get palette sorted
 			for (int col = 0; col < palette.size(); col++)
 			{
 				(*myPalette_BACK)[col] = colorMapSortable[col].color;
 			}
 
-			// mark update flag
+			// Mark update flag
 			if (bUpdated_Palette_BACK != nullptr)
 			{
 				(*bUpdated_Palette_BACK) = true;
 			}
 
-			// color
+			// Assign color back!
 			if (sizePalette > 0 && myColor_BACK != nullptr)
 			{
 				// set BACK color clicked
@@ -1122,14 +1170,6 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 		}
 	}
 
-	//else if (_name == "type url")
-	//{
-	//	imageName_path = labelUrlStr;
-	//	buildFromImageFile(imageName_path, amountColors);
-	//	ofLogNotice("ofxColorQuantizerHelper") << "type url: " << imageName_path;
-	//	ofLogNotice("ofxColorQuantizerHelper") << "type url: " << imageName_path;
-	//}
-
 	else if (_name == bReBuild.getName())
 	{
 		if (bReBuild)
@@ -1137,30 +1177,6 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 			bReBuild = false;
 			build();
 		}
-	}
-
-	else if (_name == currentImage.getName())
-	{
-		//// refresh dir
-		//dir.listDir(pathFolerDrag);
-		//dir.allowExt("jpg");
-		//dir.allowExt("png");
-		//dir.sort();
-		//currentImage.setMax(dir.size() - 1);
-
-		ofLogNotice("ofxColorQuantizerHelper") << "currentImage: " << ofToString(currentImage);
-
-		if (dir.size() > 0 && currentImage <= dir.size() - 1)
-		{
-			imageName = dir.getName(currentImage);
-			currentImage_name = imageName;
-			imageName_path = dir.getPath(currentImage);
-			buildFromImageFile(imageName_path, amountColors);
-		}
-
-		bUpdate = true;
-
-		refresh_QuantizerImage();
 	}
 
 	else if (_name == amountColors.getName())
@@ -1172,6 +1188,14 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 		//workflow
 		build();
 	}
+
+	//else if (_name == "type url")
+	//{
+	//	imageName_path = labelUrlStr;
+	//	buildFromImageFile(imageName_path, amountColors);
+	//	ofLogNotice("ofxColorQuantizerHelper") << "type url: " << imageName_path;
+	//	ofLogNotice("ofxColorQuantizerHelper") << "type url: " << imageName_path;
+	//}
 }
 
 //--------------------------------------------------------------
@@ -1198,7 +1222,7 @@ void ofxColorQuantizerHelper::rebuildMap()
 		colorMap[i] = palette[i];
 	}
 
-	//colorNameMap
+	// colorNameMap
 	for (unsigned int i = 0; i < palSize; i++)
 	{
 		map<int, ofColor>::iterator mapEntry = colorMap.begin();
@@ -1236,7 +1260,7 @@ void ofxColorQuantizerHelper::rebuildMap()
 
 	// pointers back to 'communicate externally'
 
-	//palette
+	// palette
 	int sizePalette = palette.size();
 
 	if (sizePalette > 0 && myPalette_BACK != nullptr)
@@ -1269,12 +1293,12 @@ void ofxColorQuantizerHelper::rebuildMap()
 		}
 	}
 
-	//color
+	// color
 	if (sizePalette > 0 && myColor_BACK != nullptr)
 	{
 		// set BACK color clicked
-		myColor_BACK->set(colorMapSortable[0].color);//auto get first color from palette
-		//myColor_BACK->set(palette[0]);//auto get first color from palette
+		myColor_BACK->set(colorMapSortable[0].color); // auto get first color from palette
+		//myColor_BACK->set(palette[0]); // auto get first color from palette
 
 		// flag updater color ready
 		if (bUpdated_Color_BACK != nullptr)

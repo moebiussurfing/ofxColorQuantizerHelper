@@ -15,7 +15,9 @@ class ofApp: public ofBaseApp
 		ofxColorQuantizerHelper colorQuantizer;
 
 		// NOTE
-		// This addon requires to instantiate ImGui to "draw" widgets panels inside.
-		// the addon itself has th
+		// This add-on requires to instantiate and pass as reference the ImGui object
+		// to "draw" widgets panels inside.
 		ofxSurfingGui ui;
+
+		ofColor c;
 };
