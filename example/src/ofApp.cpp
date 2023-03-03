@@ -23,7 +23,7 @@ void ofApp::draw()
 {
 	ofBackground(c);
 
-	colorQuantizer.draw();
+	//colorQuantizer.draw();
 
 	ui.Begin();
 	{
@@ -36,6 +36,8 @@ void ofApp::draw()
 				ui.Add(colorQuantizer.bGui_Library, OFX_IM_TOGGLE_ROUNDED);
 				ui.Unindent();
 			}
+
+			ui.AddToggle("Img", bDrawImg);
 			ui.EndWindow();
 		}
 
@@ -46,13 +48,17 @@ void ofApp::draw()
 	//--
 
 	// Image preview
-	if (colorQuantizer.isUpdated()) {
-		img = colorQuantizer.getImage();
-	}
-	if (img.isAllocated()) {
-		ofRectangle r{ 0,0, img.getWidth(),img.getHeight() };
-		r.scaleTo(ofGetCurrentViewport(), OF_SCALEMODE_FILL);
-		img.draw(r.x, r.y, r.getWidth(), r.getHeight());
+	if (bDrawImg) {
+		if (colorQuantizer.isUpdated())
+		{
+			img = colorQuantizer.getImage();
+		}
+		if (img.isAllocated())
+		{
+			ofRectangle r{ 0,0, img.getWidth(),img.getHeight() };
+			r.scaleTo(ofGetCurrentViewport(), OF_SCALEMODE_FILL);
+			img.draw(r.x, r.y, r.getWidth(), r.getHeight());
+		}
 	}
 }
 

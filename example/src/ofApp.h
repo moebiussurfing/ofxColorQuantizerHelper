@@ -22,4 +22,5 @@ class ofApp: public ofBaseApp
 		ofColor c;
 
 		ofImage img;
+		bool bDrawImg = true;
 };

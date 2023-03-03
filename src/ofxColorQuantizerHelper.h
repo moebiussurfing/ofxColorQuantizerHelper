@@ -68,7 +68,7 @@ public:
 	~ofxColorQuantizerHelper();
 
 	void setup();
-	void draw();
+	void draw();//not required if not using OF native widgets!
 	void exit();
 
 	void drawImGuiWindows() { draw_ImGuiWidgets(); };
@@ -80,6 +80,7 @@ private:
 	void draw_ImGuiLibrary();
 
 private:
+	// textures for gui
 	ofTexture tex;
 	ofFbo fbo;
 	void refreshImageGuiTexture();
@@ -91,18 +92,24 @@ private:
 	vector<GLuint> textureSourceID;
 
 	// should remove some parameters..
-	ofParameter<int> sizeLibColBox;
+	//ofParameter<int> sizeLibColBox;
+
 	int currentImage_PRE;
-	//ofParameter<int> currentImage_PRE;
 	
+	ofParameterGroup params_Thumbs;
 	ofParameter<int> thumbsSize;
 	ofParameter<int> thumbsSpacing;
 	ofParameter<int> thumbsBorder;
-	ofParameterGroup params_Thumbs;
 
-	float __widthPicts;
-	//ofParameter<std::string> nameMat;
-	//int dirLoadIndex;
+private:
+	void doReset() {
+		thumbsSize = 150;
+		thumbsSpacing = 2;
+		thumbsBorder = 1;
+	};
+
+	//ofParameter<bool> bResponsive;
+	float __widthPicts;//TODO: kind of expected/desired width..
 
 	//--
 
@@ -123,7 +130,6 @@ public:
 
 private:
 	ofParameter<bool> bAutoResizeLib;
-	//ofParameter<bool> bResponsive;
 
 #endif
 
@@ -152,13 +158,6 @@ public:
 	void randomPalette();
 
 private:
-	void doReset() {
-		thumbsSize = 150;
-		thumbsSpacing = 2;
-		thumbsBorder = 1;
-	};
-
-private:
 
 	// Image changed easy callback
 	bool bUpdate = false;
@@ -173,9 +172,6 @@ public:
 			return false;
 		}
 	}
-
-	//private:
-	//ofParameter<bool> bGui_Info;
 
 private:
 	//public:
@@ -311,9 +307,9 @@ private:
 
 	bool bUseBorder = true;
 
+	// for native widgets usage
 	glm::vec2 position = glm::vec2(0, 0);
 	glm::vec2 size = glm::vec2(1440, 900);
-	//bool auto_resize = false;
 
 	std::string pathFolder = "images/";
 	bool isLoadedImage = false;
