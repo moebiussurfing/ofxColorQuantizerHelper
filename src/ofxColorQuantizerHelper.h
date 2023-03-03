@@ -4,6 +4,8 @@
 
 	TODO:
 	
+	fix weird flick on image preview
+
 	add threading for loading file picture.
 	
 	small library window breaks grid layout. 
@@ -11,6 +13,8 @@
 
 	allow drag internet browser images.
 
+	draw internal widget with percent of dominant colors.
+		copy from native widget
 
 */
 
@@ -115,6 +119,7 @@ private:
 
 private:
 	ofxSurfingGui* ui;
+
 public:
 	void setUiPtr(ofxSurfingGui* ui_) {
 		ui = ui_;
@@ -302,6 +307,9 @@ private:
 	std::string* myPalette_Name_BACK = nullptr;
 	bool* bUpdated_Palette_BACK = nullptr;
 	bool* bUpdated_Color_BACK = nullptr;
+	
+	void doUpdatePointers();
+
 
 	void draw_Palette_Preview();
 

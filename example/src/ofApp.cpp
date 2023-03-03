@@ -11,7 +11,6 @@ void ofApp::setup()
 	ui.setup();
 
 	colorQuantizer.setUiPtr(&ui);
-	//colorQuantizer.setEnableNativeWidgets(true);
 	colorQuantizer.setup();
 
 	// reference first or clicked palette color

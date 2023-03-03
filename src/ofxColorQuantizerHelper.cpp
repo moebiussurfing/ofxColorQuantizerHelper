@@ -42,16 +42,9 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 {
 	if (ui->BeginWindow(bGui_Picture))
 	{
-		float _spcx;
-		float _spcy;
-		float _w100;
-		float _h100;
-		float _w99;
-		float _w50;
-		float _w33;
-		float _w25;
-		float _h;
-		ofxImGuiSurfing::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
+		float _w100 = ui->getWidgetsWidth(1);
+		float _spcx = ui->getWidgetsSpacingX();
+		float hb = ofxImGuiSurfing::getWidgetsHeightUnit();
 
 		//--
 
@@ -137,16 +130,21 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			float w = tex.getWidth();
 			float h = tex.getHeight();
 			float ratio = h / w;
+
 			float ww;
 			float hh;
 
-			ww = _w100 - 2 * _spcx;
+			//TODO: weird flick. should be border size..
+			float offset = 0;
+			//float offset = 20;
+
+			ww = _w100 - 2 * _spcx - offset;
 			hh = ww * ratio;
 
 			const float H_MAX = 300;
 			if (hh > H_MAX)
 			{
-				ww = H_MAX / ratio;
+				ww = H_MAX / ratio - 2 * _spcx;
 			}
 
 			//if (w *ratio > 400)
@@ -170,7 +168,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 				// workflow
 				// next sort
 				sortedType++;
-				if (sortedType > 4) sortedType = 1;
+				//if (sortedType > 4) sortedType = 1;
 			}
 		}
 
@@ -188,8 +186,6 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 		// fit width
 		float wb = (_w100 / (int)p.size()); // -_spc;
 
-		float hb = ofxImGuiSurfing::getWidgetsHeightUnit();
-
 		//TODO: fix width
 		//ui->AddLabelBig("COLORS");
 
@@ -198,7 +194,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			ImGui::PushID(n);
 
 			// fit width
-			ImGui::SameLine(0, 0);
+			if (n != 0) ImGui::SameLine(0, 0);
 
 			// box colors
 			if (ImGui::ColorButton("##paletteQuantizer", p[n], colorEdiFlags, ImVec2(wb, hb * 2)))
@@ -596,13 +592,15 @@ void ofxColorQuantizerHelper::randomPalette()
 	pmax = dir.size();
 	currentImage = ofRandom(pmin, pmax);
 
-	ofLogNotice("ofxColorQuantizerHelper") << "currentImage: " << ofToString(currentImage);
-	if (dir.size() > 0 && currentImage < dir.size())
-	{
-		imageName = dir.getName(currentImage);
-		imageName_path = dir.getPath(currentImage);
-		buildFromImageFile(imageName_path, amountColors);
-	}
+	ofLogNotice("ofxColorQuantizerHelper") << "randomPalette: " << ofToString(currentImage);
+
+	//ofLogNotice("ofxColorQuantizerHelper") << "currentImage: " << ofToString(currentImage);
+	//if (dir.size() > 0 && currentImage < dir.size())
+	//{
+	//	imageName = dir.getName(currentImage);
+	//	imageName_path = dir.getPath(currentImage);
+	//	buildFromImageFile(imageName_path, amountColors);
+	//}
 }
 
 //--------------------------------------------------------------
@@ -1033,6 +1031,7 @@ void ofxColorQuantizerHelper::draw()
 void ofxColorQuantizerHelper::buildQuantize()
 {
 	//return;
+	//TODO: he could be done the threading process!
 
 	if (isLoadedImage && imageCopy.isAllocated())
 	{
@@ -1081,16 +1080,22 @@ void ofxColorQuantizerHelper::loadImageAndQuantize(std::string _pathImg, int _nu
 	{
 		ofLogNotice("ofxColorQuantizerHelper") << "loadImageAndQuantize: " << _pathImg;
 
-		// speed up using an smaller image
+		// Resize smaller to speed up quantizer
 		imageCopy.clear();
 		imageCopy = image;
 		//imageCopy.load(_pathImg);
 
 		//TODO:
-		// resize smaller to speed up quantizer
+		float iw = image.getWidth();
+		float ih = image.getHeight();
+		float sz = MAX(iw, ih);
+		//float factor = (sz / 1920);
+
 		//float factor = ofMap(image.getWidth(), );
 		//float factor = 4.f;
 		float factor = 8.f;
+		if (sz > 1000) factor = 16.f;
+
 		imageCopy.resize(imageCopy.getWidth() / factor, imageCopy.getHeight() / factor);
 
 		buildQuantize();
@@ -1138,6 +1143,12 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 	// Sort
 	else if (_name == sortedType.getName())
 	{
+		static int sortedType_PRE = -1;
+		if (sortedType.get() != sortedType_PRE) {
+			sortedType_PRE = sortedType;
+		}
+		else return;
+
 		if (sortedType < 1 && sortedType > 4) {
 			sortedType.setWithoutEventNotifications(ofClamp(sortedType, 1, 4));
 			return;
@@ -1157,6 +1168,12 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 
 	else if (_name == amountColors.getName())
 	{
+		static int amountColors_PRE = -1;
+		if (amountColors != amountColors_PRE) {
+			amountColors_PRE = amountColors;
+		}
+		else return;
+
 		amountColors = ofClamp(amountColors, amountColors.getMin(), amountColors.getMax());
 
 		if (amountColors < amountColors.getMin() && amountColors > amountColors.getMax()) return;
@@ -1234,7 +1251,12 @@ void ofxColorQuantizerHelper::buildSorting()
 	//--
 
 	// Pointers back to 'communicate externally'
+	doUpdatePointers();
+}
 
+//--------------------------------------------------------------
+void ofxColorQuantizerHelper::doUpdatePointers()
+{
 	// Palette
 	int szPalette = palette.size();
 
@@ -1283,7 +1305,6 @@ void ofxColorQuantizerHelper::buildSorting()
 		}
 	}
 }
-
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::buildFromImageFile(std::string path, int num)
 {
