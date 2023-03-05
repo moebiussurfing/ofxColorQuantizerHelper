@@ -22,7 +22,7 @@ void ofApp::draw()
 {
 	ofBackground(c);
 
-	//colorQuantizer.draw();
+	colorQuantizer.draw(); // not required when not using OF native widgets!
 
 	ui.Begin();
 	{
@@ -55,7 +55,8 @@ void ofApp::draw()
 		if (img.isAllocated())
 		{
 			ofRectangle r{ 0,0, img.getWidth(),img.getHeight() };
-			r.scaleTo(ofGetCurrentViewport(), OF_SCALEMODE_FILL);
+			r.scaleTo(ofGetCurrentViewport(), OF_SCALEMODE_FIT);
+			//r.scaleTo(ofGetCurrentViewport(), OF_SCALEMODE_FILL);
 			img.draw(r.x, r.y, r.getWidth(), r.getHeight());
 		}
 	}

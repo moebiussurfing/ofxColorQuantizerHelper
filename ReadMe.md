@@ -1,38 +1,39 @@
 ofxColorQuantizerHelper
 -----------------------
 
-**openFrameworks** addon to get the dominant colors of a picture. Helps the integration of the original **ofxColorQuantizer** coded by @**mantissa**. 
+**openFrameworks** add-on to get the dominant colors of a picture. Helps the integration of the original **ofxColorQuantizer** coded by @**mantissa**. 
 
 ## Screenshot
-![image](/readme_images/Capture1.PNG?raw=true "image")
+![](/example/Capture.PNG)
 
 ## Overview
-* Drag images into window to get a palette with the dominant colors.  
+* Get a palette with the dominant colors of a picture.  
 * Set the desired number of colors.
-* Different sorting colors: by **H/S/B** or % of appearance.
-* ImGui GUI based. Docking and image folder grid preview and browser.
+* Different sorting colors: by **H/S/B** or `%` of appearance.
+* Put your images also into `bin/data/images/`.
+* Or drag files into the app window. 
+* `ImGui` based. Grid preview and folder browser.
 
 ## Dependencies
 * ofxOpenCv
-* [ofxImGui](https://github.com/Daandelange/ofxImGui/tree/ofParameters-Helpers-Test) from @**Daandelange**  
 * [ofxSurfingImGui](https://github.com/moebiussurfing/ofxSurfingImGui)  
-* [ofxSurfingHelpers](https://github.com/moebiussurfing/ofxSurfingHelpers)  
 
 Already packed into ```/libs```. No need to add:  
 * [ofxColorQuantizer](https://github.com/moebiussurfing/ofxColorQuantizer) [ FORK ]  
 
 ## Note
-- Sometimes dragging files is not working on *Windows 10*, maybe because something related to ownership or administration rights.
+- Sometimes dragging files is not working on *Windows 10*, maybe because of something related to ownership or administration rights.
 
-## Tested systems
-- **Windows10** / **VS2017** / **OF ~0.11**
+## Tested Systems
+- **Windows10** / **VS2017** / **OF ~0.11+**
 
 ## Author
 Addon by **@moebiusSurfing**  
-*(ManuMolina). 2020.*  
+*(ManuMolina). 2020-2023.*  
 
-Original code from **@mantissa**. Thanks!  
+Original code from **@mantissa**.  
 https://github.com/mantissa/ofxColorQuantizer  
+Thanks!  
 
 ## License
 *MIT License.*

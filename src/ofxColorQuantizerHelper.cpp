@@ -40,6 +40,18 @@ void ofxColorQuantizerHelper::refreshImageGuiTexture()
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::draw_ImGuiPicture()
 {
+	if (!bGui_Picture) return;
+
+	float wdef = 300;
+	float hdef = ofGetHeight() / 2;
+	ImGuiCond cond = ImGuiCond_FirstUseEver;
+	if (bDoResetPic) {
+		bDoResetPic = false;
+		ui->bAutoResize = true;
+		cond = ImGuiCond_Always;
+	}
+	ImGui::SetNextWindowSize(ImVec2(wdef, hdef), cond);
+
 	if (ui->BeginWindow(bGui_Picture))
 	{
 		float _w100 = ui->getWidgetsWidth(1);
@@ -88,7 +100,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 
 			if (ui->isMaximized())
 			{
-				// index / total
+				// Index / total
 				std::string s = ofToString(currentImage.get()) + "/" + ofToString(getAmountFiles() - 1);
 				ui->AddLabel(s);
 			}
@@ -228,7 +240,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			doSortNext();
 		}
 
-		ui->AddSpacing();
+		//ui->AddSpacing();
 
 		ui->AddLabel(sortedType_name);
 
@@ -251,9 +263,9 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 				{
 					// workflow
 					// to allow add more files on runtime
-					int currentImage_PRE = currentImage;
+					int currentImage_ = currentImage;
 					refreshFiles();
-					currentImage = currentImage_PRE;
+					currentImage = currentImage_;
 					buildQuantize();
 				}
 
@@ -295,7 +307,6 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 					if (ui->AddButton("Reset", OFX_IM_BUTTON))
 					{
 						doReset();
-						bDoReset = true;
 					};
 				}
 #endif
@@ -307,6 +318,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 					ui->Add(bGui_WidgetInfo, OFX_IM_TOGGLE_ROUNDED_MINI);
 				}
 				ui->Add(bKeys, OFX_IM_TOGGLE_ROUNDED_MINI);
+				ui->Add(ui->bDebug, OFX_IM_TOGGLE_ROUNDED_MINI);
 
 				ui->Unindent();
 			}
@@ -323,189 +335,181 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 {
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
 
-	if (bGui_Library)
+	if (!bGui_Library) return;
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	int _amountImages = dir.size();
+
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
+	if (bAutoResizeLib)
 	{
-		ImGuiStyle& style = ImGui::GetStyle();
-		int _amountImages = dir.size();
+		window_flags += ImGuiWindowFlags_AlwaysAutoResize;
+	}
 
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
-		if (bAutoResizeLib)
-		{
-			window_flags += ImGuiWindowFlags_AlwaysAutoResize;
-		}
+	//TODO: fix grid layout reset.
+	float offset = 0;
+	//float offset = style.WindowPadding.x;
+	//for (int i = 0; i < _amountImages; i++)
+	//{
+	//	offset += style.FrameBorderSize;
+	//	offset += style.FramePadding.x;
+	//	offset += style.ItemSpacing.x;
+	//	offset += style.ItemInnerSpacing.x;
+	//}
 
-		//TODO: fix grid layout reset.
-		float offset = 0;
-		//float offset = style.WindowPadding.x;
-		//for (int i = 0; i < _amountImages; i++)
-		//{
-		//	offset += style.FrameBorderSize;
-		//	offset += style.FramePadding.x;
-		//	offset += style.ItemSpacing.x;
-		//	offset += style.ItemInnerSpacing.x;
-		//}
+	// reset
+	float wdef = 400;
+	float hdef = ofGetHeight() / 2;
 
-		// reset
-		float wdef = 400;
-		float hdef = ofGetHeight() / 2;
+	// constraints
+	float wmax = ofGetWidth();
+	float hmax = ofGetHeight() - 50;
 
-		// constraints
-		float wmax = ofGetWidth();
-		float hmax = ofGetHeight() - 50;
+	// workround fix grid size troubles..
+	bool bFix = true;
+	if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize * 2 + offset, wdef), ImVec2(wmax, hmax));
 
-		// workround fix
-		bool bFix = true;
-		if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize * 2 + offset, wdef), ImVec2(wmax, hmax));
+	ImGuiCond cond = ImGuiCond_FirstUseEver;
 
-		ImGuiCond cond = ImGuiCond_FirstUseEver;
+	if (bDoResetLib) {
+		bDoResetLib = false;
+		cond = ImGuiCond_Always;
+	}
 
-		if (bDoReset) {
-			bDoReset = false;
-			cond = ImGuiCond_Always;
-		}
+	ImGui::SetNextWindowSize(ImVec2(wdef, hdef), cond);
 
-		ImGui::SetNextWindowSize(ImVec2(wdef, hdef), cond);
+	if (bGui_Picture && bGuiLinked) ui->setNextWindowAfterWindowNamed(bGui_Picture);
 
-		if (bGui_Picture && bGuiLinked) ui->setNextWindowAfterWindowNamed(bGui_Picture);
+	//--
+
+	if (ui->BeginWindow(bGui_Library, window_flags))
+	{
+		currentImage_ = currentImage;
 
 		//--
 
-		if (ui->BeginWindow(bGui_Library, window_flags))
+		ImVec2 szImgButton;
+		float _ww;
+		float _hh;
+		float _ratio;
+
+		//ImVec2 szImgButton((float)thumbsSize.get(), (float)thumbsSize.get());
+		//
+		//__widthPicts = _w100 - _spcx;
+		//__widthPicts -= ImGui::GetStyle().ItemInnerSpacing.x;
+		// 
+		//if (bResponsive.get())
+		//{
+		//	static int sizeThumb_ = 1;
+		//	if (sizeThumb_ != thumbsSize.get())
+		//	{
+		//		sizeThumb_ = thumbsSize;
+		//		//thumbsSize = __widthPicts;
+		//		//_ww = thumbsSize;
+		//		_ww = sizeThumb_;
+		//	}
+		//	else _ww = thumbsSize;
+		//}
+		//else
+		//{
+		//	//if (bResponsive) _ww = __widthPicts;
+		//	//else _ww = (float)thumbsSize.get();
+		//	_ww = (float)thumbsSize.get();
+		//}
+
+		_ww = (float)thumbsSize.get();
+
+		//--
+
+
+		for (int n = 0; n < _amountImages; n++)
 		{
-			currentImage_PRE = currentImage;
-
-			float _spcx;
-			float _spcy;
-			float _w100;
-			float _h100;
-			float _w99;
-			float _w50;
-			float _w33;
-			float _w25;
-			float _h;
-			ofxImGuiSurfing::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
+			// Respect aspect ratio images with width fit
+			_ratio = textureSource[n].getHeight() / textureSource[n].getWidth();
+			_hh = _ww * _ratio;
+			szImgButton = ImVec2(_ww, _hh);
 
 			//--
 
-			ImVec2 szImgButton;
-			float _ww;
-			float _hh, _ratio;
+			ImGui::PushID(n);
 
-			//ImVec2 szImgButton((float)thumbsSize.get(), (float)thumbsSize.get());
+			// Tweak spacing and border
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize,
+				(float)thumbsBorder.get());
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+				ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
+				ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing,
+				ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
 
-			//__widthPicts = _w100 - _spcx;
-			//__widthPicts -= ImGui::GetStyle().ItemInnerSpacing.x;
-			// 
-			//if (bResponsive.get())
-			//{
-			//	static int sizeThumb_ = 1;
-			//	if (sizeThumb_ != thumbsSize.get())
-			//	{
-			//		sizeThumb_ = thumbsSize;
-			//		//thumbsSize = __widthPicts;
-			//		//_ww = thumbsSize;
-			//		_ww = sizeThumb_;
-			//	}
-			//	else _ww = thumbsSize;
-			//}
-			//else
-			//{
-			//	//if (bResponsive) _ww = __widthPicts;
-			//	//else _ww = (float)thumbsSize.get();
-			//	_ww = (float)thumbsSize.get();
-			//}
+			//string name = ofToString(n);
 
-			_ww = (float)thumbsSize.get();
-
-			//--
-
-			//ImGuiStyle& style = ImGui::GetStyle();
-			//int _amountImages = dir.size();
-
-			float _wx2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-
-			for (int n = 0; n < _amountImages; n++)
+			// Customize colors
+			if (n == currentImage_) // when selected
 			{
-				// Respect aspect ratio images with width fit
-				_ratio = textureSource[n].getHeight() / textureSource[n].getWidth();
-				_hh = _ww * _ratio;
-				szImgButton = ImVec2(_ww, _hh);
+				float a = ofxSurfingHelpers::getFadeBlink();
+				//float a = 0.7;
 
-				//--
+				const ImVec4 color1_ = style.Colors[ImGuiCol_Text];
+				const ImVec4 color1 = ImVec4(color1_.x, color1_.y, color1_.z, color1_.w * a);
+				ImGui::PushStyleColor(ImGuiCol_Border, color1);
 
-				ImGui::PushID(n);
-
-				// Tweak spacing and border
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize,
-					(float)thumbsBorder.get());
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-					ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
-				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
-					ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
-				ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing,
-					ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
-
-				//string name = ofToString(n);
-
-				// Customize colors
-				if (n == currentImage_PRE) // when selected
-				{
-					float a = ofxSurfingHelpers::getFadeBlink();
-					//float a = 0.7;
-
-					const ImVec4 color1_ = style.Colors[ImGuiCol_Text];
-					const ImVec4 color1 = ImVec4(color1_.x, color1_.y, color1_.z, color1_.w * a);
-					ImGui::PushStyleColor(ImGuiCol_Border, color1);
-
-					//const ImVec4 color1 = style.Colors[ImGuiCol_ButtonActive];
-					//ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color1);
-					//ImGui::PushStyleColor(ImGuiCol_Button, color1);
-				}
-				else // when not selected
-				{
-					const ImVec4 color2 = style.Colors[ImGuiCol_Button]; // do not changes the color
-					ImGui::PushStyleColor(ImGuiCol_Border, color2);
-					//ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color2);
-				}
-
-				//--
-
-				// Image button
-				if (ImGui::ImageButton(GetImTextureID(textureSourceID[n]), szImgButton))
-				{
-					ofLogNotice("ofxColorQuantizerHelper") << "[ " + ofToString(n) + " ] THUMB : " + dir.getName(n);
-
-					currentImage_PRE = n;
-
-					//--
-
-					// Here will trig the callback!
-					currentImage = currentImage_PRE;
-				}
-
-				//--
-
-				// Customize colors
-				ImGui::PopStyleColor(); // border
-				//ImGui::PopStyleColor(); // hovered
-
-				float last_button_x2 = ImGui::GetItemRectMax().x;
-				float next_button_x2 = last_button_x2 + style.ItemSpacing.x + szImgButton.x;
-
-				// Expected position if next button was on same line
-				if (n + 1 < _amountImages && next_button_x2 < _wx2) ui->SameLine();
-
-				// Spacing and border
-				ImGui::PopStyleVar();
-				ImGui::PopStyleVar();
-				ImGui::PopStyleVar();
-				ImGui::PopStyleVar();
-
-				ImGui::PopID();
+				//const ImVec4 color1 = style.Colors[ImGuiCol_ButtonActive];
+				//ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color1);
+				//ImGui::PushStyleColor(ImGuiCol_Button, color1);
+			}
+			else // when not selected
+			{
+				const ImVec4 color2 = style.Colors[ImGuiCol_Button]; // do not changes the color
+				ImGui::PushStyleColor(ImGuiCol_Border, color2);
+				//ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color2);
 			}
 
-			ui->EndWindow();
+			//--
+
+			// Image button
+			if (ImGui::ImageButton(GetImTextureID(textureSourceID[n]), szImgButton))
+			{
+				ofLogNotice("ofxColorQuantizerHelper") << "THUMB: #" + ofToString(n) + " / " + dir.getName(n);
+
+				currentImage_ = n;
+
+				//--
+
+				// Here will trig the callback!
+				currentImage = currentImage_;
+			}
+
+			//--
+
+			// Customize colors
+			ImGui::PopStyleColor(); // border
+			//ImGui::PopStyleColor(); // hovered
+
+			//--
+
+			// Spacing and border
+			ImGui::PopStyleVar(4);
+			//ImGui::PopStyleVar();
+			//ImGui::PopStyleVar();
+			//ImGui::PopStyleVar();
+			//ImGui::PopStyleVar();
+
+			ImGui::PopID();
+
+			float xBorderRight = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+			float xLastButton = ImGui::GetItemRectMax().x;
+			float xNextButton = xLastButton + style.ItemSpacing.x + szImgButton.x;
+
+			// Expected position if next button was on same line
+			//if (n + 1 < _amountImages && xNextButton < _xBorderRight) ui->SameLine();
+			if ((n < _amountImages - 1) // last one do not requires same line
+				&& (xNextButton < xBorderRight))
+				ui->SameLine();
 		}
+
+		ui->EndWindow();
 	}
 #endif
 }
@@ -634,7 +638,7 @@ void ofxColorQuantizerHelper::refreshFiles()
 	imageNames.clear();
 	for (int i = 0; i < dir.size(); i++)
 	{
-		ofLogNotice("ofxColorQuantizerHelper") << "file " << "[" << ofToString(i) << "] " << dir.getName(i);
+		ofLogNotice("ofxColorQuantizerHelper") << "#" << ofToString(i) << " " << dir.getName(i);
 
 		imageNames.push_back(dir.getName(i));
 	}
@@ -644,7 +648,7 @@ void ofxColorQuantizerHelper::refreshFiles()
 
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
 	//TODO:
-	// Grid picker
+	// Preview image / grid picker
 	textureSource.clear();
 	textureSource.resize(dir.size());
 	textureSourceID.clear();
@@ -778,9 +782,9 @@ void ofxColorQuantizerHelper::setup()
 	parameters.add(bReBuild.set("Rebuild", false));
 	parameters.add(amountColors.set("Colors", 10, 1, 20));
 	parameters.add(sortedType.set("Sort Type", 1, 1, 4));
-	parameters.add(sortedType_name.set(" ", sortedType_name));
-	parameters.add(currentImage.set("File ", 0, 0, dir.size() - 1));
-	parameters.add(currentImage_name.set("", ""));
+	parameters.add(sortedType_name.set("SortedTypeName", sortedType_name));
+	parameters.add(currentImage.set("FileIndex", 0, 0, dir.size() - 1));
+	parameters.add(currentImage_name.set("FileName", ""));
 	//parameters.add(labelUrlStr.set("type url", labelUrlStr));
 
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
@@ -860,6 +864,16 @@ void ofxColorQuantizerHelper::setup()
 void ofxColorQuantizerHelper::draw()
 {
 	bool bCenter = true;
+
+	if (ui->bDebug && ui->isMaximized() && ui->bAdvanced) 
+	{
+		if (imageCopy.isAllocated())
+		{
+			imageCopy.draw(0, 0);
+		}
+	}
+
+	//--
 
 	//if (isLoadedImage && bGui && bGui_Info)
 	if (bUseNativeWidgets)
@@ -992,13 +1006,10 @@ void ofxColorQuantizerHelper::draw()
 
 			ofPopStyle();
 		}
-	}
 
-	//----
+		//----
 
-	// 1. Help info
-	if (bUseNativeWidgets)
-	{
+		// 1. Help info
 		if (bGui_Help)
 		{
 			std::string str = infoHelp;
@@ -1028,7 +1039,7 @@ void ofxColorQuantizerHelper::draw()
 void ofxColorQuantizerHelper::buildQuantize()
 {
 	//return;
-	//TODO: he could be done the threading process!
+	//TODO: Here could be done the threading process!
 
 	if (isLoadedImage && imageCopy.isAllocated())
 	{
@@ -1086,12 +1097,13 @@ void ofxColorQuantizerHelper::loadImageAndQuantize(std::string _pathImg, int _nu
 		float iw = image.getWidth();
 		float ih = image.getHeight();
 		float sz = MAX(iw, ih);
-		//float factor = (sz / 1920);
 
-		//float factor = ofMap(image.getWidth(), );
+		////float factor = 8.f;
 		//float factor = 4.f;
-		float factor = 8.f;
-		if (sz > 1000) factor = 16.f;
+		//if (sz > 1000) factor *= 1.5f;
+
+		// reduce proportionally to pict size!
+		float factor = ofMap(iw, 10, 1920, 2, 6);
 
 		imageCopy.resize(imageCopy.getWidth() / factor, imageCopy.getHeight() / factor);
 
@@ -1117,9 +1129,9 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 	{
 		ofLogNotice("ofxColorQuantizerHelper") << "currentImage: " << ofToString(currentImage);
 
-		static int currentImage_PRE = -1;
-		if (currentImage.get() != currentImage_PRE) {
-			currentImage_PRE = currentImage;
+		static int currentImage_ = -1;
+		if (currentImage.get() != currentImage_) {
+			currentImage_ = currentImage;
 		}
 		else return;
 

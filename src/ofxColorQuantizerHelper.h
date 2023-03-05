@@ -4,16 +4,12 @@
 
 	TODO:
 
-	fix weird flick on image preview
+	add threading for processing (and loading) file picture.
 
-	add threading for loading file picture.
+	allow drag url / internet browser images.
 
-	small library window breaks grid layout.
-		only showing first 4 picts..
-
-	allow drag internet browser images.
-
-	draw internal widget with percent of dominant colors.
+	draw internal ImGui widget 
+		with percent of dominant colors.
 		copy from native widget
 
 */
@@ -65,7 +61,7 @@ typedef struct
 
 class ofxColorQuantizerHelper
 {
-	//-
+	//--
 
 public:
 	ofxColorQuantizerHelper();
@@ -98,7 +94,7 @@ private:
 	// should remove some parameters..
 	//ofParameter<int> sizeLibColBox;
 
-	int currentImage_PRE;
+	int currentImage_;
 
 	ofParameterGroup params_Thumbs;
 	ofParameter<int> thumbsSize;
@@ -107,6 +103,10 @@ private:
 
 private:
 	void doReset() {
+
+		bDoResetLib = true;
+		bDoResetPic = true;
+
 		thumbsSize = 150;
 		thumbsSpacing = 2;
 		thumbsBorder = 1;
@@ -209,7 +209,8 @@ private:
 	ofTrueTypeFont font;
 	ofTrueTypeFont font2;
 
-	bool bDoReset = false;
+	bool bDoResetLib = false;
+	bool bDoResetPic= false;
 
 	//TODO: not used
 private:
