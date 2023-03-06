@@ -47,7 +47,9 @@
 //--
 
 //TODO:
-//#include "imgInspect.h"
+// magnifying glass 
+#include "imgInspect.h"
+#include <stb_image.h>
 
 //--
 
@@ -64,6 +66,10 @@ class ofxColorQuantizerHelper
 	//--
 
 public:
+
+	unsigned char* data = nullptr;
+	int width, height, channels;
+
 	ofxColorQuantizerHelper();
 	~ofxColorQuantizerHelper();
 
@@ -80,14 +86,15 @@ private:
 	void draw_ImGuiLibrary();
 
 private:
-	// textures for gui
+
+	// Textures for pict preview on gui
 	ofTexture tex;
 	ofFbo fbo;
 	void refreshImageGuiTexture();
 
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
 	//TODO:
-	// grid picker
+	// Grid picker
 	vector<ofTexture> textureSource;
 	vector<GLuint> textureSourceID;
 
@@ -310,6 +317,7 @@ private:
 	bool* bUpdated_Color_BACK = nullptr;
 
 	void doUpdatePointers();
+	void doUpdatePointerColor(int n = 0);
 
 
 	void draw_Palette_Preview();

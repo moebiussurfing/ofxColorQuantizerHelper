@@ -1,19 +1,22 @@
 #include "ofxColorQuantizerHelper.h"
 
 #ifdef USE_IM_GUI__QUANTIZER
+
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::refreshImageGuiTexture()
 {
 	ofLogNotice("ofxColorQuantizerHelper") << "refreshImageGuiTexture()";
 
-	// loaded ofImage
+	// Loaded ofImage
 	ofLogNotice("ofxColorQuantizerHelper") << "image path: " << getImagePath();
 
 	bool b = ofGetUsingArbTex();//push
 
 	ofDisableArbTex();
 
-	//TODO: could improve reusing this image from the quantizer too..
+	//TODO: 
+	// Could improve reusing the image from the quantizer too..
+	// avoiding to re load the file!
 	if (image.isAllocated())
 		tex = image.getTexture();
 	else
@@ -29,7 +32,7 @@ void ofxColorQuantizerHelper::refreshImageGuiTexture()
 	ofClear(0);
 	fbo.end();
 
-	if (b) ofEnableArbTex();//pop/restore
+	if (b) ofEnableArbTex(); // pop/restore
 
 	fbo.begin(); // draw once only
 	ofClear(0, 0, 0, 0);
@@ -173,13 +176,46 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			//	ww = _w99 - 20; // hardcoded pad to avoid flickering bug...
 			//}
 
-			if (ImGui::ImageButton((ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID,
-				ImVec2(ww, ww * ratio)))
+			if (ImGui::ImageButton(
+				(ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID,
+				ImVec2(ww, hh)))
 			{
-				ofLogNotice("ofxColorQuantizerHelper") << "Image Pressed";
-				// workflow
+				ofLogNotice("ofxColorQuantizerHelper") << "Image clicked";
+
 				doSortNext();
 			}
+
+			//--
+
+			ImGuiIO& io = ImGui::GetIO();
+			ImRect rc = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+			ImVec2 mouseUVCoord = (io.MousePos - rc.Min) / rc.GetSize();
+			mouseUVCoord.y = 1.f - mouseUVCoord.y;
+
+			//Image pickerImage;
+
+			// Obtener un const unsigned char* const a partir de la textura
+			//const unsigned char* const bits = static_cast<const unsigned char* const>(tex.getTextureData().textureID);
+			//const unsigned char* const bits = static_cast<const unsigned char* const>(tex.getTextureData().textureID);
+			//const unsigned char* const bits = static_cast<const unsigned char* const>(tex.getTextureData().textureTarget);
+
+			//const unsigned char* const bits = tex.getTextureData().textureID;
+			//const unsigned char* const bits = textureSourceID[0];
+			//const unsigned char* const bits = (ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID;
+
+			ImVec2 displayedTextureSize = ImVec2(ww, hh);
+
+			if (io.KeyShift && io.MouseDown[0] && mouseUVCoord.x >= 0.f && mouseUVCoord.y >= 0.f)
+			{
+				//int width = ww;
+				//int height = hh;
+
+				ImageInspect::inspect(width, height, (void*)data, mouseUVCoord, displayedTextureSize);
+				//ImageInspect::inspect(width, height, pickerImage.GetBits(), mouseUVCoord, displayedTextureSize);
+				//ImageInspect::inspect(width, height, bits, mouseUVCoord, displayedTextureSize);
+			}
+
+			//--
 		}
 
 		//--
@@ -209,20 +245,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			// box colors
 			if (ImGui::ColorButton("##paletteQuantizer", p[n], colorEdiFlags, ImVec2(wb, hb * 2)))
 			{
-				// Assign color back!
-				if (palette.size() > 0 && myColor_BACK != nullptr)
-				{
-					// set BACK color clicked
-					myColor_BACK->set(colorMapSortable[n].color);
-					//myColor_BACK->set(palette[n]); // auto get first color from palette
-					//myColor_BACK->set(colorMap[n]); // auto get first color from palette
-
-					// flag updater color ready
-					if (bUpdated_Color_BACK != nullptr)
-					{
-						(*bUpdated_Color_BACK) = true;
-					}
-				}
+				doUpdatePointerColor(n);
 			}
 
 			ImGui::PopID();
@@ -239,8 +262,6 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 		{
 			doSortNext();
 		}
-
-		//ui->AddSpacing();
 
 		ui->AddLabel(sortedType_name);
 
@@ -769,7 +790,7 @@ void ofxColorQuantizerHelper::setup()
 
 	thumbsSize.set("Size", 100, 40, 300);
 	thumbsSpacing.set("Spacing", 5, 0, 20);
-	thumbsBorder.set("border", 1, 0, 10);
+	thumbsBorder.set("Border", 1, 0, 10);
 
 	params_Thumbs.add(thumbsSize);
 	params_Thumbs.add(thumbsSpacing);
@@ -865,7 +886,7 @@ void ofxColorQuantizerHelper::draw()
 {
 	bool bCenter = true;
 
-	if (ui->bDebug && ui->isMaximized() && ui->bAdvanced) 
+	if (ui->bDebug && ui->isMaximized() && ui->bAdvanced)
 	{
 		if (imageCopy.isAllocated())
 		{
@@ -1036,6 +1057,25 @@ void ofxColorQuantizerHelper::draw()
 }
 
 //--------------------------------------------------------------
+void ofxColorQuantizerHelper::doUpdatePointerColor(int n)
+{
+	// Assign color back!
+	if (palette.size() > 0 && myColor_BACK != nullptr)
+	{
+		// set BACK color clicked
+		myColor_BACK->set(colorMapSortable[n].color);
+		//myColor_BACK->set(palette[n]); // auto get first color from palette
+		//myColor_BACK->set(colorMap[n]); // auto get first color from palette
+
+		// flag updater color ready
+		if (bUpdated_Color_BACK != nullptr)
+		{
+			(*bUpdated_Color_BACK) = true;
+		}
+	}
+}
+
+//--------------------------------------------------------------
 void ofxColorQuantizerHelper::buildQuantize()
 {
 	//return;
@@ -1082,6 +1122,10 @@ void ofxColorQuantizerHelper::loadImageAndQuantize(std::string _pathImg, int _nu
 	if (amountColors.get() != _numColors) {
 		amountColors = _numColors;
 	}
+
+	// Cargar una imagen desde un archivo usando stb_image
+	data = stbi_load(_pathImg.c_str(), &width, &height, &channels, 0);
+
 
 	isLoadedImage = image.load(_pathImg);
 	if (isLoadedImage)
@@ -1300,20 +1344,22 @@ void ofxColorQuantizerHelper::doUpdatePointers()
 	}
 
 	// Color
-	if (szPalette > 0 && myColor_BACK != nullptr)
-	{
-		// Set BACK color clicked
-		myColor_BACK->set(colorMapSortable[0].color); // auto get first color from palette
-		//myColor_BACK->set(palette[0]); // auto get first color from palette
-		//myColor_BACK->set(colorMap[0]); // auto get first color from palette
+	doUpdatePointerColor(0);
+	//if (szPalette > 0 && myColor_BACK != nullptr)
+	//{
+	//	// Set BACK color clicked
+	//	myColor_BACK->set(colorMapSortable[0].color); // auto get first color from palette
+	//	//myColor_BACK->set(palette[0]); // auto get first color from palette
+	//	//myColor_BACK->set(colorMap[0]); // auto get first color from palette
 
-		// Flag updater color ready to refresh
-		if (bUpdated_Color_BACK != nullptr)
-		{
-			(*bUpdated_Color_BACK) = true;
-		}
-	}
+	//	// Flag updater color ready to refresh
+	//	if (bUpdated_Color_BACK != nullptr)
+	//	{
+	//		(*bUpdated_Color_BACK) = true;
+	//	}
+	//}
 }
+
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::buildFromImageFile(std::string path, int num)
 {
@@ -1325,6 +1371,7 @@ void ofxColorQuantizerHelper::buildFromImageFile(std::string path, int num)
 	//loadImageAndQuantize(pathFolder + path, num);
 }
 
+//TODO:
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::buildFromImageUrl(std::string url, int num)
 {

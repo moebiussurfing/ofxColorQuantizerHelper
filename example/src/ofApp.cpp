@@ -10,11 +10,14 @@ void ofApp::setup()
 
 	ui.setup();
 
+	//-
+
+	// Reference first or clicked palette color
+	// to be autoupdated. Will be used as Bg color.
+	colorQuantizer.setColor_BACK(c);
+
 	colorQuantizer.setUiPtr(&ui);
 	colorQuantizer.setup();
-
-	// reference first or clicked palette color
-	colorQuantizer.setColor_BACK(c);
 }
 
 //--------------------------------------------------------------
@@ -47,7 +50,8 @@ void ofApp::draw()
 	//--
 
 	// Image preview
-	if (bDrawImg) {
+	if (bDrawImg)
+	{
 		if (colorQuantizer.isUpdated())
 		{
 			img = colorQuantizer.getImage();
