@@ -1196,7 +1196,7 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 {
 	std::string _name = e.getName();
 
-	ofLogNotice("ofxColorQuantizerHelper") << _name << " : " << e;
+	ofLogNotice("ofxColorQuantizerHelper") << _name << ": " << e;
 
 	if (0) {}
 
