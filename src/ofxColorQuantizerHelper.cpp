@@ -48,7 +48,8 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 	float wdef = 300;
 	float hdef = ofGetHeight() / 2;
 	ImGuiCond cond = ImGuiCond_FirstUseEver;
-	if (bDoResetPic) {
+	if (bDoResetPic)
+	{
 		bDoResetPic = false;
 		ui->bAutoResize = true;
 		cond = ImGuiCond_Always;
@@ -198,7 +199,6 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			//const unsigned char* const bits = static_cast<const unsigned char* const>(tex.getTextureData().textureID);
 			//const unsigned char* const bits = static_cast<const unsigned char* const>(tex.getTextureData().textureID);
 			//const unsigned char* const bits = static_cast<const unsigned char* const>(tex.getTextureData().textureTarget);
-
 			//const unsigned char* const bits = tex.getTextureData().textureID;
 			//const unsigned char* const bits = textureSourceID[0];
 			//const unsigned char* const bits = (ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID;
@@ -210,7 +210,9 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 				//int width = ww;
 				//int height = hh;
 
-				ImageInspect::inspect(width, height, (void*)data, mouseUVCoord, displayedTextureSize);
+				//ImageInspect::inspect(width, height, data, mouseUVCoord, displayedTextureSize);
+				//ImageInspect::inspect(width, height, (void*)data, mouseUVCoord, displayedTextureSize);
+
 				//ImageInspect::inspect(width, height, pickerImage.GetBits(), mouseUVCoord, displayedTextureSize);
 				//ImageInspect::inspect(width, height, bits, mouseUVCoord, displayedTextureSize);
 			}
@@ -368,7 +370,8 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 	}
 
 	//TODO: fix grid layout reset.
-	float offset = 0;
+	//float offset = 0;
+	
 	//float offset = style.WindowPadding.x;
 	//for (int i = 0; i < _amountImages; i++)
 	//{
@@ -387,8 +390,9 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 	float hmax = ofGetHeight() - 50;
 
 	// workround fix grid size troubles..
-	bool bFix = true;
-	if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize * 2 + offset, wdef), ImVec2(wmax, hmax));
+	bool bFix = 1;
+	if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize, wdef), ImVec2(wmax, hmax));
+	//if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize * 2 + offset, wdef), ImVec2(wmax, hmax));
 
 	ImGuiCond cond = ImGuiCond_FirstUseEver;
 
@@ -888,9 +892,18 @@ void ofxColorQuantizerHelper::draw()
 
 	if (ui->bDebug && ui->isMaximized() && ui->bAdvanced)
 	{
-		if (imageCopy.isAllocated())
+		if (imageSmall.isAllocated())
 		{
-			imageCopy.draw(0, 0);
+			//imageSmall.draw(0, 0);
+
+			float pad = 5;
+			float w = imageSmall.getWidth();
+			float h = imageSmall.getHeight();
+			float x = ofGetWidth() - w - pad;
+			float y = ofGetHeight() - h - pad;
+			imageSmall.draw(x, y);
+
+			ofDrawBitmapStringHighlight(ofToString(d1, 0) + " ms", x + 4, y + 14);
 		}
 	}
 
@@ -1054,7 +1067,7 @@ void ofxColorQuantizerHelper::draw()
 #ifdef USE_OFX_GUI__QUANTIZER
 	if (bGui) gui.draw();
 #endif
-}
+		}
 
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::doUpdatePointerColor(int n)
@@ -1080,8 +1093,10 @@ void ofxColorQuantizerHelper::buildQuantize()
 {
 	//return;
 	//TODO: Here could be done the threading process!
+	static uint32_t t0;
+	t0 = ofGetElapsedTimeMillis();
 
-	if (isLoadedImage && imageCopy.isAllocated())
+	if (isLoadedImage && imageSmall.isAllocated())
 	{
 		int _max = amountColors;
 		//int _max = amountColors + 1;
@@ -1089,7 +1104,7 @@ void ofxColorQuantizerHelper::buildQuantize()
 		//int _max = colorQuantizer.getNumColors() + 1;
 
 		colorQuantizer.setNumColors(_max);
-		colorQuantizer.quantize(imageCopy.getPixels());
+		colorQuantizer.quantize(imageSmall.getPixels());
 
 		sortedColors.clear();;
 		//sortedColors.resize(colorQuantizer.getNumColors());
@@ -1110,9 +1125,21 @@ void ofxColorQuantizerHelper::buildQuantize()
 
 		std::sort(sortedColors.begin(), sortedColors.end(), by_distance());
 
+		//TODO:
+		d1 = ofGetElapsedTimeMillis() - t0;
+		auto t1 = ofGetElapsedTimeMillis();
+		ofLogNotice("ofxColorQuantizerHelper") << "Time Quantizer: \n" << d1 << "ms";
+
 		//--
 
 		buildSorting();
+
+		////TODO:
+		//auto t2 = ofGetElapsedTimeMillis();
+		//auto d2 = t2 - t1;
+		//ofLogNotice("ofxColorQuantizerHelper") << "Time Quantizer (SORT): \n" << d2 << "ms";
+
+		//ofLogNotice("ofxColorQuantizerHelper") << "Done";
 	}
 }
 
@@ -1124,7 +1151,7 @@ void ofxColorQuantizerHelper::loadImageAndQuantize(std::string _pathImg, int _nu
 	}
 
 	// Cargar una imagen desde un archivo usando stb_image
-	data = stbi_load(_pathImg.c_str(), &width, &height, &channels, 0);
+	///*unsigned char**/ data = stbi_load(_pathImg.c_str(), &width, &height, &channels, 0);
 
 
 	isLoadedImage = image.load(_pathImg);
@@ -1133,9 +1160,9 @@ void ofxColorQuantizerHelper::loadImageAndQuantize(std::string _pathImg, int _nu
 		ofLogNotice("ofxColorQuantizerHelper") << "loadImageAndQuantize: " << _pathImg;
 
 		// Resize smaller to speed up quantizer
-		imageCopy.clear();
-		imageCopy = image;
-		//imageCopy.load(_pathImg);
+		imageSmall.clear();
+		imageSmall = image;
+		//imageSmall.load(_pathImg);
 
 		//TODO:
 		float iw = image.getWidth();
@@ -1149,7 +1176,7 @@ void ofxColorQuantizerHelper::loadImageAndQuantize(std::string _pathImg, int _nu
 		// reduce proportionally to pict size!
 		float factor = ofMap(iw, 10, 1920, 2, 6);
 
-		imageCopy.resize(imageCopy.getWidth() / factor, imageCopy.getHeight() / factor);
+		imageSmall.resize(imageSmall.getWidth() / factor, imageSmall.getHeight() / factor);
 
 		buildQuantize();
 	}
@@ -1620,9 +1647,11 @@ ofxColorQuantizerHelper::~ofxColorQuantizerHelper()
 	//removeMouseListeners();
 	setActive(false);
 
-	//crashes?
-	//ofRemoveListener(parameters.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
-	//ofRemoveListener(parameters_Advanced.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
+	// crashes?
+	ofRemoveListener(parameters.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
+	ofRemoveListener(parameters_Advanced.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
+
+	//stbi_image_free(data);
 }
 
 //--------------------------------------------------------------

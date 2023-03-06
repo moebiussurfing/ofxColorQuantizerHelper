@@ -47,9 +47,9 @@
 //--
 
 //TODO:
-// magnifying glass 
+// Magnifying glass 
 #include "imgInspect.h"
-#include <stb_image.h>
+//#include <stb_image.h>
 
 //--
 
@@ -65,16 +65,18 @@ class ofxColorQuantizerHelper
 {
 	//--
 
-public:
-
-	unsigned char* data = nullptr;
+private:
+	//unsigned char* data /*= nullptr*/;
 	int width, height, channels;
 
+	uint32_t d1=0;
+
+public:
 	ofxColorQuantizerHelper();
 	~ofxColorQuantizerHelper();
 
 	void setup();
-	void draw();//not required if not using OF native widgets!
+	void draw(); // Not required if not using OF native widgets!
 	void exit();
 
 	void drawImGuiWindows() { draw_ImGuiWidgets(); };
@@ -351,7 +353,7 @@ public:
 
 private:
 	ofImage image;
-	ofImage imageCopy;
+	ofImage imageSmall;
 	std::string imageName_path;
 	std::string imageName;
 	vector<std::string> imageNames;
