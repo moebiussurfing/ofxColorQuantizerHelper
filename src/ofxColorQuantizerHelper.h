@@ -49,7 +49,7 @@
 //TODO:
 // Magnifying glass 
 #include "imgInspect.h"
-//#include <stb_image.h>
+#include <stb_image.h>
 
 //--
 
@@ -66,6 +66,8 @@ class ofxColorQuantizerHelper
 	//--
 
 private:
+	//TODO:
+	// Magnifying glass 
 	//unsigned char* data /*= nullptr*/;
 	int width, height, channels;
 
@@ -121,8 +123,9 @@ private:
 		thumbsBorder = 1;
 	};
 
+	//TODO: kind of expected/desired width..
 	//ofParameter<bool> bResponsive;
-	float __widthPicts;//TODO: kind of expected/desired width..
+	//float __widthPicts;
 
 	//--
 

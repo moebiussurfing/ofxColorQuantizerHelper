@@ -60,8 +60,8 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 	{
 		float _w100 = ui->getWidgetsWidth(1);
 		float _spcx = ui->getWidgetsSpacingX();
-		float hb = ofxImGuiSurfing::getWidgetsHeightUnit();
-
+		float hb= ui->getWidgetsHeightUnit();
+		
 		//--
 
 		ui->AddMinimizerToggle();
@@ -419,6 +419,7 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 		float _hh;
 		float _ratio;
 
+		//TODO; responsive
 		//ImVec2 szImgButton((float)thumbsSize.get(), (float)thumbsSize.get());
 		//
 		//__widthPicts = _w100 - _spcx;
@@ -462,14 +463,10 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 			ImGui::PushID(n);
 
 			// Tweak spacing and border
-			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize,
-				(float)thumbsBorder.get());
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-				ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
-			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
-				ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
-			ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing,
-				ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, (float)thumbsBorder.get());
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2((float)thumbsSpacing.get(), (float)thumbsSpacing.get()));
 
 			//string name = ofToString(n);
 
@@ -532,7 +529,7 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 
 			// Expected position if next button was on same line
 			if ((n < _amountImages - 1) // last one do not requires same line
-				&& (xNextButton < xBorderRight)) 
+				&& (xNextButton < xBorderRight))
 			{
 				ui->SameLine();
 			}
