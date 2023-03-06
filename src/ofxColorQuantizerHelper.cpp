@@ -360,6 +360,8 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 
 	if (!bGui_Library) return;
 
+	static int _countPerRow = 1;
+
 	ImGuiStyle& style = ImGui::GetStyle();
 	int _amountImages = dir.size();
 
@@ -369,17 +371,16 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 		window_flags += ImGuiWindowFlags_AlwaysAutoResize;
 	}
 
-	//TODO: fix grid layout reset.
 	//float offset = 0;
-	
-	//float offset = style.WindowPadding.x;
-	//for (int i = 0; i < _amountImages; i++)
-	//{
-	//	offset += style.FrameBorderSize;
-	//	offset += style.FramePadding.x;
-	//	offset += style.ItemSpacing.x;
-	//	offset += style.ItemInnerSpacing.x;
-	//}
+	float offset = 2 * style.WindowPadding.x;
+
+	for (int i = 0; i < _countPerRow; i++)
+	{
+		offset += style.FrameBorderSize;
+		offset += style.FramePadding.x;
+		offset += style.ItemSpacing.x;
+		offset += style.ItemInnerSpacing.x;
+	}
 
 	// reset
 	float wdef = 400;
@@ -391,8 +392,8 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 
 	// workround fix grid size troubles..
 	bool bFix = 1;
-	if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize, wdef), ImVec2(wmax, hmax));
-	//if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize * 2 + offset, wdef), ImVec2(wmax, hmax));
+	if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize + offset, wdef), ImVec2(wmax, hmax));
+	//if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize, wdef), ImVec2(wmax, hmax));
 
 	ImGuiCond cond = ImGuiCond_FirstUseEver;
 
@@ -446,6 +447,8 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 
 		//--
 
+		//TODO:
+		//_countPerRow = 0;
 
 		for (int n = 0; n < _amountImages; n++)
 		{
@@ -528,10 +531,12 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 			float xNextButton = xLastButton + style.ItemSpacing.x + szImgButton.x;
 
 			// Expected position if next button was on same line
-			//if (n + 1 < _amountImages && xNextButton < _xBorderRight) ui->SameLine();
 			if ((n < _amountImages - 1) // last one do not requires same line
-				&& (xNextButton < xBorderRight))
+				&& (xNextButton < xBorderRight)) 
+			{
 				ui->SameLine();
+			}
+			//else _countPerRow++;
 		}
 
 		ui->EndWindow();
@@ -1067,7 +1072,7 @@ void ofxColorQuantizerHelper::draw()
 #ifdef USE_OFX_GUI__QUANTIZER
 	if (bGui) gui.draw();
 #endif
-		}
+}
 
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::doUpdatePointerColor(int n)
