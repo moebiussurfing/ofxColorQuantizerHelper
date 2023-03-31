@@ -5,7 +5,7 @@ ofxColorQuantizerHelper
 Helps the integration of the original **ofxColorQuantizer** coded by @**mantissa** into an OF app. 
 
 ## Screenshot
-![](/example/Capture.PNG)
+![](/example_ColorQuatizer/Capture.PNG)
 
 ## Overview
 * Get a palette with the dominant colors of a picture.  
