@@ -3,10 +3,7 @@
 //--------------------------------------------------------------
 void ofApp::setup()
 {
-	ofSetFrameRate(60);
-
-	ofSetWindowPosition(-1080, 25);
-	ofSetWindowShape(1080, 1920);
+	ofxImGuiSurfing::SurfSetMyMonitor(0);
 
 	ui.setup();
 
@@ -14,7 +11,7 @@ void ofApp::setup()
 
 	// Reference first or clicked palette color
 	// to be autoupdated. Will be used as Bg color.
-	colorQuantizer.setColor_BACK(c);
+	colorQuantizer.setColorPtr(c);
 
 	colorQuantizer.setUiPtr(&ui);
 	colorQuantizer.setup();
@@ -24,6 +21,23 @@ void ofApp::setup()
 void ofApp::draw()
 {
 	ofBackground(c);
+
+	//--
+
+	// Image preview
+	if (bDrawImg)
+	{
+		if (colorQuantizer.isUpdated())
+		{
+			img = colorQuantizer.getImage();
+		}
+		if (img.isAllocated())
+		{
+			ofxImGuiSurfing::SurfDrawImageAtBottom(img);
+		}
+	}
+
+	//--
 
 	colorQuantizer.draw(); // not required when not using OF native widgets!
 
@@ -46,24 +60,6 @@ void ofApp::draw()
 		colorQuantizer.drawImGuiWindows();
 	}
 	ui.End();
-
-	//--
-
-	// Image preview
-	if (bDrawImg)
-	{
-		if (colorQuantizer.isUpdated())
-		{
-			img = colorQuantizer.getImage();
-		}
-		if (img.isAllocated())
-		{
-			ofRectangle r{ 0,0, img.getWidth(),img.getHeight() };
-			r.scaleTo(ofGetCurrentViewport(), OF_SCALEMODE_FIT);
-			//r.scaleTo(ofGetCurrentViewport(), OF_SCALEMODE_FILL);
-			img.draw(r.x, r.y, r.getWidth(), r.getHeight());
-		}
-	}
 }
 
 //--------------------------------------------------------------

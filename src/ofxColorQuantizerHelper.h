@@ -303,8 +303,10 @@ public:
 	void setPalette_BACK_Name(std::string& n);
 	void setPalette_BACK(vector<ofColor>& p);
 	void setPalette_BACK_RefreshPalette(bool& b);
+	void setColorPtr(ofColor& c);//legacy
 	void setColor_BACK(ofColor& c);
-	void setColor_BACK_Refresh(bool& b);
+	void setColor_BACK_Refresh(bool& b);//legacy
+	void setColorPtrRefresh(bool& b);
 
 private:
 	// Build palette from already quantized and sorted colors

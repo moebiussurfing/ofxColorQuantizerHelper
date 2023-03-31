@@ -60,13 +60,14 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 	{
 		float _w100 = ui->getWidgetsWidth(1);
 		float _spcx = ui->getWidgetsSpacingX();
-		float hb= ui->getWidgetsHeightUnit();
-		
+		float hb = ui->getWidgetsHeightUnit();
+
 		//--
 
 		ui->AddMinimizerToggle();
 		if (ui->isMaximized())
 		{
+			ui->AddDebugToggle();
 			ui->AddAutoResizeToggle();
 		}
 		ui->AddSpacingSeparated();
@@ -473,16 +474,19 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 			// Customize colors
 			if (n == currentImage_) // when selected
 			{
-				float a = ofxSurfingHelpers::getFadeBlink();
-				//float a = 0.7;
+				ofFloatColor c;
+				ofxSurfingHelpers::setColorFadeBlinkBW(c);
+				ImGui::PushStyleColor(ImGuiCol_Border, c);
 
-				const ImVec4 color1_ = style.Colors[ImGuiCol_Text];
-				const ImVec4 color1 = ImVec4(color1_.x, color1_.y, color1_.z, color1_.w * a);
-				ImGui::PushStyleColor(ImGuiCol_Border, color1);
+				//float a = ofxSurfingHelpers::getFadeBlink();
+				////float a = 0.7;
+				//const ImVec4 color1_ = style.Colors[ImGuiCol_Text];
+				//const ImVec4 color1 = ImVec4(color1_.x, color1_.y, color1_.z, color1_.w * a);
+				//ImGui::PushStyleColor(ImGuiCol_Border, color1);
 
-				//const ImVec4 color1 = style.Colors[ImGuiCol_ButtonActive];
-				//ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color1);
-				//ImGui::PushStyleColor(ImGuiCol_Button, color1);
+				////const ImVec4 color1 = style.Colors[ImGuiCol_ButtonActive];
+				////ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color1);
+				////ImGui::PushStyleColor(ImGuiCol_Button, color1);
 			}
 			else // when not selected
 			{
@@ -494,7 +498,10 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 			//--
 
 			// Image button
-			if (ImGui::ImageButton(GetImTextureID(textureSourceID[n]), szImgButton))
+
+			bool b = (ImGui::ImageButton((ImTextureID)(uintptr_t)textureSourceID[n], szImgButton));
+			//bool b = (ImGui::ImageButton(GetImTextureID(textureSourceID[n]), szImgButton));
+			if (b)
 			{
 				ofLogNotice("ofxColorQuantizerHelper") << "THUMB: #" + ofToString(n) + " / " + dir.getName(n);
 
@@ -892,20 +899,40 @@ void ofxColorQuantizerHelper::draw()
 {
 	bool bCenter = true;
 
-	if (ui->bDebug && ui->isMaximized() && ui->bAdvanced)
+	//if (ui->bDebug && ui->isMaximized() && ui->bAdvanced)
+	if (ui->bDebug)
 	{
+		// Debug elapsed time to process image quantizer
 		if (imageSmall.isAllocated())
 		{
-			//imageSmall.draw(0, 0);
+			ofPushStyle();
 
-			float pad = 5;
+			float p = 6;
+			float p2 = 5;
+
 			float w = imageSmall.getWidth();
 			float h = imageSmall.getHeight();
-			float x = ofGetWidth() - w - pad;
-			float y = ofGetHeight() - h - pad;
+			float x = ofGetWidth() - w - p;
+			float y = ofGetHeight() - h - p;
+
+			//bg
+			ofRectangle r(x, y, w, h);
+			r.setWidth(r.width + p2);
+			r.setHeight(r.height + p2);
+			r.translateX(-p2 / 2.f);
+			r.translateY(-p2 / 2.f);
+			ofFill();
+			ofSetColor(0, 225);
+			ofDrawRectRounded(r, 3);
+
+			//img
+			ofSetColor(255, 255);
 			imageSmall.draw(x, y);
 
+			//txt
 			ofDrawBitmapStringHighlight(ofToString(d1, 0) + " ms", x + 4, y + 14);
+
+			ofPopStyle();
 		}
 	}
 
@@ -1763,6 +1790,11 @@ void ofxColorQuantizerHelper::saveAppSettings(ofParameterGroup& g, std::string p
 
 // Pointers back to 'communicate externally'
 
+//--------------------------------------------------------------
+void ofxColorQuantizerHelper::setColorPtr(ofColor& c)
+{
+	myColor_BACK = &c;
+}
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::setColor_BACK(ofColor& c)
 {
