@@ -8,7 +8,7 @@
 
 	allow drag url / internet browser images.
 
-	draw internal ImGui widget 
+	draw internal ImGui widget
 		with percent of dominant colors.
 		copy from native widget
 
@@ -46,10 +46,7 @@
 
 //--
 
-//TODO:
-// Magnifying glass 
-#include "imgInspect.h"
-#include <stb_image.h>
+#include "surfingImageInspect.h"
 
 //--
 
@@ -71,7 +68,15 @@ private:
 	//unsigned char* data /*= nullptr*/;
 	int width, height, channels;
 
-	uint32_t d1=0;
+	//measure times for image load and quantize
+	uint32_t d1 = 0;
+	uint32_t d1_ = 0;
+	uint32_t d2 = 0;
+	uint32_t d2_ = 0;
+
+	SurfImageInspect imageInspect;
+	ofParameter<ofColor> color{ "Color", ofColor(128, 128) };
+	ofEventListener listenerColor;
 
 public:
 	ofxColorQuantizerHelper();
@@ -82,7 +87,6 @@ public:
 	void exit();
 
 	void drawImGuiWindows() { draw_ImGuiWidgets(); };
-
 
 private:
 	void draw_ImGuiWidgets();
@@ -222,7 +226,7 @@ private:
 	ofTrueTypeFont font2;
 
 	bool bDoResetLib = false;
-	bool bDoResetPic= false;
+	bool bDoResetPic = false;
 
 	//TODO: not used
 private:

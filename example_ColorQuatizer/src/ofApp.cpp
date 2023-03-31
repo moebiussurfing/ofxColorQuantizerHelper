@@ -3,14 +3,15 @@
 //--------------------------------------------------------------
 void ofApp::setup()
 {
-	ofxImGuiSurfing::SurfSetMyMonitor(0);
+	ofxSurfingHelpers::SurfSetMyMonitor(0);
 
 	ui.setup();
 
 	//-
 
 	// Reference first or clicked palette color
-	// to be autoupdated. Will be used as Bg color.
+	// to be auto updated. 
+	// Will be used as Bg color.
 	colorQuantizer.setColorPtr(c);
 
 	colorQuantizer.setUiPtr(&ui);
@@ -33,7 +34,7 @@ void ofApp::draw()
 		}
 		if (img.isAllocated())
 		{
-			ofxImGuiSurfing::SurfDrawImageAtBottom(img);
+			ofxSurfingHelpers::SurfDrawImageAtBottom(img);
 		}
 	}
 
@@ -53,7 +54,8 @@ void ofApp::draw()
 				ui.Unindent();
 			}
 
-			ui.AddToggle("Img", bDrawImg);
+			ui.AddSpacing();
+			ui.AddToggle("Draw Image", bDrawImg, OFX_IM_TOGGLE_MEDIUM);
 			ui.EndWindow();
 		}
 

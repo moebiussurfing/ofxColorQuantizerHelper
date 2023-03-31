@@ -45,6 +45,18 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 {
 	if (!bGui_Picture) return;
 
+	bool bDebug = ui->bDebug;
+	
+	// window lock move
+	// Locks moving window when mouse over image.	
+	static bool bOver = false;
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
+	if (ui->bAutoResize) window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
+	if (bOver) window_flags |= ImGuiWindowFlags_NoMove; 
+
+	//--
+
+	// window size
 	float wdef = 300;
 	float hdef = ofGetHeight() / 2;
 	ImGuiCond cond = ImGuiCond_FirstUseEver;
@@ -56,7 +68,9 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 	}
 	ImGui::SetNextWindowSize(ImVec2(wdef, hdef), cond);
 
-	if (ui->BeginWindow(bGui_Picture))
+	//--
+
+	if (ui->BeginWindow(bGui_Picture, window_flags))
 	{
 		float _w100 = ui->getWidgetsWidth(1);
 		float _spcx = ui->getWidgetsSpacingX();
@@ -80,7 +94,6 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			ui->Add(bAutoResizeLib, OFX_IM_TOGGLE_ROUNDED_MINI);
 			ui->Unindent();
 		}
-
 		ui->AddSpacingSeparated();
 
 		//--
@@ -117,21 +130,21 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 
 		//--
 
-		if (ui->AddButton("<", OFX_IM_BUTTON_MEDIUM, 2))
+		if (ui->AddButton("<", OFX_IM_BUTTON_BIG, 2))
 		{
 			loadPrev();
 		}
 
 		ui->SameLine();
 
-		if (ui->AddButton(">", OFX_IM_BUTTON_MEDIUM, 2))
+		if (ui->AddButton(">", OFX_IM_BUTTON_BIG, 2))
 		{
 			loadNext();
 		}
 
 		//--
 
-		ui->AddSpacing();
+		ui->AddSpacingSeparated();
 
 		//if (ui->isMaximized()) ui->AddLabelBig("PICTURE");
 
@@ -142,83 +155,71 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 
 		// 2. Image Preview
 
-		if (tex.isAllocated())
+		//if (tex.isAllocated()) // Image
+		if (imageInspect.isImageLoaded()) // Image Inspect widget
 		{
-			float w = tex.getWidth();
-			float h = tex.getHeight();
-			float ratio = h / w;
+			float wSrc = tex.getWidth();
+			float hSrc = tex.getHeight();
+			float ratioSrc = hSrc / wSrc;
 
-			float ww;
-			float hh;
+			float wDisplay;
+			float hDisplay;
 
 			//TODO: weird flick. should be border size..
 			float offset = 0;
 			//float offset = 20;
 
-			ww = _w100 - 2 * _spcx - offset;
-			hh = ww * ratio;
+			wDisplay = _w100 - 2 * _spcx - offset;
+			hDisplay = wDisplay * ratioSrc;
 
 			const float H_MAX = 300;
-			if (hh > H_MAX)
+			if (hDisplay > H_MAX)
 			{
-				ww = H_MAX / ratio - 2 * _spcx;
+				wDisplay = H_MAX / ratioSrc - 2 * _spcx;
 			}
 
-			//if (w *ratio > 400)
-
+			//if (wSrc *ratioSrc > 400)
 			//float hMax = 400;
-			//if (h > hMax) 
+			//if (hSrc > hMax) 
 			//{
-			//	h = hMax;
-			//	w = h / ratio;
-			//	ww = _w50;
+			//	hSrc = hMax;
+			//	wSrc = hSrc / ratioSrc;
+			//	wDisplay = _w50;
 			//}
 			//else
 			//{
-			//	ww = _w99 - 20; // hardcoded pad to avoid flickering bug...
+			//	wDisplay = _w99 - 20; // hardcoded pad to avoid flickering bug...
 			//}
 
+			//--
+
+			// Image Inspect widget
+			ImVec2 szDisplay(wDisplay, hDisplay);
+			ImVec2 szSrc(wSrc, hSrc);
+			imageInspect.drawImGuiImgeWidget(szDisplay, szSrc, bOver, bDebug);
+			ui->AddSpacing();
+
+			ui->Add(color, OFX_IM_COLOR_BOX_FULL_WIDTH);
+			ui->AddSpacing();
+			ui->Add(imageInspect.bGui, OFX_IM_TOGGLE_ROUNDED); 
+			ui->SameLine();
+			ui->Add(imageInspect.bGui_Image, OFX_IM_TOGGLE_ROUNDED);
+			ui->AddSpacingBigSeparated();
+
+			//--
+
+			// Image
+			/*
 			if (ImGui::ImageButton(
 				(ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID,
-				ImVec2(ww, hh)))
+				ImVec2(wDisplay, hDisplay)))
 			{
 				ofLogNotice("ofxColorQuantizerHelper") << "Image clicked";
 
+				// Do on click
 				doSortNext();
 			}
-
-			//--
-
-			ImGuiIO& io = ImGui::GetIO();
-			ImRect rc = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
-			ImVec2 mouseUVCoord = (io.MousePos - rc.Min) / rc.GetSize();
-			mouseUVCoord.y = 1.f - mouseUVCoord.y;
-
-			//Image pickerImage;
-
-			// Obtener un const unsigned char* const a partir de la textura
-			//const unsigned char* const bits = static_cast<const unsigned char* const>(tex.getTextureData().textureID);
-			//const unsigned char* const bits = static_cast<const unsigned char* const>(tex.getTextureData().textureID);
-			//const unsigned char* const bits = static_cast<const unsigned char* const>(tex.getTextureData().textureTarget);
-			//const unsigned char* const bits = tex.getTextureData().textureID;
-			//const unsigned char* const bits = textureSourceID[0];
-			//const unsigned char* const bits = (ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID;
-
-			ImVec2 displayedTextureSize = ImVec2(ww, hh);
-
-			if (io.KeyShift && io.MouseDown[0] && mouseUVCoord.x >= 0.f && mouseUVCoord.y >= 0.f)
-			{
-				//int width = ww;
-				//int height = hh;
-
-				//ImageInspect::inspect(width, height, data, mouseUVCoord, displayedTextureSize);
-				//ImageInspect::inspect(width, height, (void*)data, mouseUVCoord, displayedTextureSize);
-
-				//ImageInspect::inspect(width, height, pickerImage.GetBits(), mouseUVCoord, displayedTextureSize);
-				//ImageInspect::inspect(width, height, bits, mouseUVCoord, displayedTextureSize);
-			}
-
-			//--
+			*/
 		}
 
 		//--
@@ -261,7 +262,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 
 		// Gui parameters
 
-		if (ui->AddButton("SORT", OFX_IM_BUTTON, 1))
+		if (ui->AddButton("SORT", OFX_IM_BUTTON_MEDIUM, 1))
 		{
 			doSortNext();
 		}
@@ -352,6 +353,8 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 #endif
 		ui->EndWindow();
 	}
+
+	imageInspect.drawImGui();
 }
 
 //--------------------------------------------------------------
@@ -454,7 +457,7 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 
 		for (int n = 0; n < _amountImages; n++)
 		{
-			// Respect aspect ratio images with width fit
+			// Respect aspect ratioSrc images with width fit
 			_ratio = textureSource[n].getHeight() / textureSource[n].getWidth();
 			_hh = _ww * _ratio;
 			szImgButton = ImVec2(_ww, _hh);
@@ -481,7 +484,7 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 				//float a = ofxSurfingHelpers::getFadeBlink();
 				////float a = 0.7;
 				//const ImVec4 color1_ = style.Colors[ImGuiCol_Text];
-				//const ImVec4 color1 = ImVec4(color1_.x, color1_.y, color1_.z, color1_.w * a);
+				//const ImVec4 color1 = ImVec4(color1_.x, color1_.y, color1_.z, color1_.wSrc * a);
 				//ImGui::PushStyleColor(ImGuiCol_Border, color1);
 
 				////const ImVec4 color1 = style.Colors[ImGuiCol_ButtonActive];
@@ -553,11 +556,11 @@ void ofxColorQuantizerHelper::draw_ImGuiWidgets()
 {
 	//TODO:
 	////Image pickerImage;
-	//float w = tex.getWidth();
-	//float h = tex.getHeight();
+	//float wSrc = tex.getWidth();
+	//float hSrc = tex.getHeight();
 	//auto io = ImGui::GetIO();
 
-	//ImGui::ImageButton((ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID, ImVec2(w, h));
+	//ImGui::ImageButton((ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID, ImVec2(wSrc, hSrc));
 	//ImRect rc = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
 	//ImVec2 mouseUVCoord = (io.MousePos - rc.Min) / rc.GetSize();
 	//mouseUVCoord.y = 1.f - mouseUVCoord.y;
@@ -567,7 +570,7 @@ void ofxColorQuantizerHelper::draw_ImGuiWidgets()
 	//	//int width = pickerImage.mWidth;
 	//	//int height = pickerImage.mHeight;
 
-	//	//imageInspect(w, h, pickerImage.GetBits(), mouseUVCoord, displayedTextureSize);
+	//	//imageInspect(wSrc, hSrc, pickerImage.GetBits(), mouseUVCoord, displayedTextureSize);
 	//}
 
 	//--
@@ -865,6 +868,29 @@ void ofxColorQuantizerHelper::setup()
 
 	refreshFiles();
 
+	//--
+
+	imageInspect.setUiPtr(ui);
+	imageInspect.setup();
+
+	// Link color to be auto updated!
+	color.makeReferenceTo(imageInspect.colorPtr);
+
+	// Callback
+	listenerColor = color.newListener([&](ofColor& newColor) {
+		ofLogNotice("ofxColorQuantizerHelper") << "Color Inspect: " << newColor;
+
+	if (myColor_BACK != nullptr)
+	{
+		myColor_BACK->set(newColor);
+
+		if (bUpdated_Color_BACK != nullptr)
+		{
+			(*bUpdated_Color_BACK) = true;
+		}
+	}
+		});
+
 	//----
 
 	// Startup settings
@@ -899,41 +925,14 @@ void ofxColorQuantizerHelper::draw()
 {
 	bool bCenter = true;
 
-	//if (ui->bDebug && ui->isMaximized() && ui->bAdvanced)
 	if (ui->bDebug)
 	{
 		// Debug elapsed time to process image quantizer
-		if (imageSmall.isAllocated())
-		{
-			ofPushStyle();
-
-			float p = 6;
-			float p2 = 5;
-
-			float w = imageSmall.getWidth();
-			float h = imageSmall.getHeight();
-			float x = ofGetWidth() - w - p;
-			float y = ofGetHeight() - h - p;
-
-			//bg
-			ofRectangle r(x, y, w, h);
-			r.setWidth(r.width + p2);
-			r.setHeight(r.height + p2);
-			r.translateX(-p2 / 2.f);
-			r.translateY(-p2 / 2.f);
-			ofFill();
-			ofSetColor(0, 225);
-			ofDrawRectRounded(r, 3);
-
-			//img
-			ofSetColor(255, 255);
-			imageSmall.draw(x, y);
-
-			//txt
-			ofDrawBitmapStringHighlight(ofToString(d1, 0) + " ms", x + 4, y + 14);
-
-			ofPopStyle();
-		}
+		string s = "";
+		s += "Load " + ofToString(d2, 0) + " ms";
+		s += "\n";
+		s += "Qntz " + ofToString(d1, 0) + " ms";
+		ofxSurfingHelpers::SurfDrawImageAtBottomRight(imageSmall, s);
 	}
 
 	//--
@@ -964,7 +963,7 @@ void ofxColorQuantizerHelper::draw()
 
 					int imgW = 200;//set all sizes relatives to this
 
-					// Draw original image but resized to imgW pixels width, same aspect ratio
+					// Draw original image but resized to imgW pixels width, same aspect ratioSrc
 					float imgRatio = image.getHeight() / image.getWidth();
 					int imgH = imgRatio * imgW;
 
@@ -1122,8 +1121,7 @@ void ofxColorQuantizerHelper::buildQuantize()
 {
 	//return;
 	//TODO: Here could be done the threading process!
-	static uint32_t t0;
-	t0 = ofGetElapsedTimeMillis();
+	d1_ = ofGetElapsedTimeMillis();
 
 	if (isLoadedImage && imageSmall.isAllocated())
 	{
@@ -1155,18 +1153,12 @@ void ofxColorQuantizerHelper::buildQuantize()
 		std::sort(sortedColors.begin(), sortedColors.end(), by_distance());
 
 		//TODO:
-		d1 = ofGetElapsedTimeMillis() - t0;
-		auto t1 = ofGetElapsedTimeMillis();
+		d1 = ofGetElapsedTimeMillis() - d1_;
 		ofLogNotice("ofxColorQuantizerHelper") << "Time Quantizer: \n" << d1 << "ms";
 
 		//--
 
 		buildSorting();
-
-		////TODO:
-		//auto t2 = ofGetElapsedTimeMillis();
-		//auto d2 = t2 - t1;
-		//ofLogNotice("ofxColorQuantizerHelper") << "Time Quantizer (SORT): \n" << d2 << "ms";
 
 		//ofLogNotice("ofxColorQuantizerHelper") << "Done";
 	}
@@ -1179,14 +1171,18 @@ void ofxColorQuantizerHelper::loadImageAndQuantize(std::string _pathImg, int _nu
 		amountColors = _numColors;
 	}
 
-	// Cargar una imagen desde un archivo usando stb_image
-	///*unsigned char**/ data = stbi_load(_pathImg.c_str(), &width, &height, &channels, 0);
 
+	// measure load and resize image
+	d2_ = ofGetElapsedTimeMillis();
 
 	isLoadedImage = image.load(_pathImg);
 	if (isLoadedImage)
 	{
 		ofLogNotice("ofxColorQuantizerHelper") << "loadImageAndQuantize: " << _pathImg;
+
+		imageInspect.loadTexture(_pathImg);
+
+		//--
 
 		// Resize smaller to speed up quantizer
 		imageSmall.clear();
@@ -1206,6 +1202,11 @@ void ofxColorQuantizerHelper::loadImageAndQuantize(std::string _pathImg, int _nu
 		float factor = ofMap(iw, 10, 1920, 2, 6);
 
 		imageSmall.resize(imageSmall.getWidth() / factor, imageSmall.getHeight() / factor);
+
+		//--
+
+		// measure quantizer
+		d2 = ofGetElapsedTimeMillis() - d2_;
 
 		buildQuantize();
 	}
