@@ -32,10 +32,8 @@ void ofApp::draw()
 		{
 			img = colorQuantizer.getImage();
 		}
-		if (img.isAllocated())
-		{
-			ofxSurfingHelpers::SurfDrawImageAtBottom(img);
-		}
+	
+		ofxSurfingHelpers::SurfDrawImageResponsive(img);
 	}
 
 	//--

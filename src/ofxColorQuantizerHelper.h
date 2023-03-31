@@ -6,7 +6,7 @@
 
 	add threading for processing (and loading) file picture.
 
-	allow drag url / internet browser images.
+	allow drag URL / Internet browser images.
 
 	draw internal ImGui widget
 		with percent of dominant colors.
