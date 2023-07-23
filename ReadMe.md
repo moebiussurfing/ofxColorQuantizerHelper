@@ -11,16 +11,16 @@ Helps the integration of the original **ofxColorQuantizer** coded by @**mantissa
 * Get a palette with the dominant colors of a picture.  
   * Set the desired number of colors.
   * Threaded quantizer process.
+  * Magnifed color picker. Ctrl + Mouse wheel to set zoom depth.
 * Different sorting modes: by **Hue/Saturation/Brightness** or **% of appearance**.
 * Put your images also into `bin/data/images/`.
   * Or drag files into the app window. 
 * `ImGui` based. Grid preview and folder browser.
-* Magnifed color picker. Draw the mouse wheel to zoom.
 
 ## Dependencies
 * [ofxSurfingImGui](https://github.com/moebiussurfing/ofxSurfingImGui)  
-* [ofxColorQuantizer](https://github.com/moebiussurfing/ofxColorQuantizer)
-* ofxOpenCv
+* [ofxColorQuantizer](https://github.com/moebiussurfing/ofxColorQuantizer) / FORK
+* ofxOpenCv / OF CORE
 
 ## Note
 - Sometimes dragging files is not working on *Windows 10*, maybe because of something related to ownership or administration rights.
