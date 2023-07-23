@@ -83,6 +83,7 @@ public:
 	~ofxColorQuantizerHelper();
 
 	void setup();
+	void update(ofEventArgs& args);
 	void draw(); // Not required if not using OF native widgets!
 	void exit();
 

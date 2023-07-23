@@ -14,13 +14,12 @@ Helps the integration of the original **ofxColorQuantizer** coded by @**mantissa
 * Put your images also into `bin/data/images/`.
 * Or drag files into the app window. 
 * `ImGui` based. Grid preview and folder browser.
+* Threaded quantizer process.
 
 ## Dependencies
-* ofxOpenCv
 * [ofxSurfingImGui](https://github.com/moebiussurfing/ofxSurfingImGui)  
-
-Already packed into ```/libs```. No need to add:  
-* [ofxColorQuantizer](https://github.com/moebiussurfing/ofxColorQuantizer) / FORK  
+* [ofxColorQuantizer](https://github.com/moebiussurfing/ofxColorQuantizer)
+* ofxOpenCv
 
 ## Note
 - Sometimes dragging files is not working on *Windows 10*, maybe because of something related to ownership or administration rights.

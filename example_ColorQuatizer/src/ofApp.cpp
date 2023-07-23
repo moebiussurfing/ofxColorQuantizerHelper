@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 void ofApp::setup()
 {
-	ofxSurfingHelpers::SurfSetMyMonitor(0);
+	ofxSurfingHelpers::setMonitorsLayout(-1, false, true);
 
 	ui.setup();
 
@@ -33,7 +33,7 @@ void ofApp::draw()
 			img = colorQuantizer.getImage();
 		}
 	
-		ofxSurfingHelpers::SurfDrawImageResponsive(img);
+		ofxSurfingHelpers::drawImageResponsive(img);
 	}
 
 	//--

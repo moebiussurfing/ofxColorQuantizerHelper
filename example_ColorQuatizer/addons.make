@@ -1,3 +1,4 @@
+ofxColorQuantizer
 ofxColorQuantizerHelper
 ofxGui
 ofxImGui

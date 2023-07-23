@@ -1,5 +1,34 @@
 #include "ofxColorQuantizerHelper.h"
 
+//--------------------------------------------------------------
+ofxColorQuantizerHelper::ofxColorQuantizerHelper()
+{
+	setActive(true);
+
+	//ofAddListener(parameters.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
+	//ofAddListener(parameters_Advanced.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
+
+	ofAddListener(ofEvents().update, this, &ofxColorQuantizerHelper::update);
+}
+
+//--------------------------------------------------------------
+ofxColorQuantizerHelper::~ofxColorQuantizerHelper()
+{
+	exit();
+
+	//removeKeysListeners();
+	//removeMouseListeners();
+	setActive(false);
+
+	// crashes?
+	ofRemoveListener(parameters.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
+	ofRemoveListener(parameters_Advanced.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
+
+	//stbi_image_free(data);
+
+	ofRemoveListener(ofEvents().update, this, &ofxColorQuantizerHelper::update);
+}
+
 #ifdef USE_IM_GUI__QUANTIZER
 
 //--------------------------------------------------------------
@@ -932,7 +961,7 @@ void ofxColorQuantizerHelper::draw()
 		s += "Load " + ofToString(d2, 0) + " ms";
 		s += "\n";
 		s += "Qntz " + ofToString(d1, 0) + " ms";
-		ofxSurfingHelpers::SurfDrawImageAtBottomRight(imageSmall, s);
+		ofxSurfingHelpers::drawImageAtBottomRight(imageSmall, s);
 	}
 
 	//--
@@ -1125,19 +1154,27 @@ void ofxColorQuantizerHelper::buildQuantize()
 
 	if (isLoadedImage && imageSmall.isAllocated())
 	{
-		int _max = amountColors;
+		//int _max = amountColors;
 		//int _max = amountColors + 1;
 		//int _max = colorQuantizer.getNumColors();
 		//int _max = colorQuantizer.getNumColors() + 1;
 
-		colorQuantizer.setNumColors(_max);
+		colorQuantizer.setNumColors(amountColors);
 		colorQuantizer.quantize(imageSmall.getPixels());
+	}
+}
+
+//--------------------------------------------------------------
+void ofxColorQuantizerHelper::update(ofEventArgs& args) {
+	if (colorQuantizer.isReady())
+	{
+		ofLogNotice("ofxColorQuantizerHelper") << "ofxColorQuantizer process Done!";
 
 		sortedColors.clear();;
 		//sortedColors.resize(colorQuantizer.getNumColors());
-		sortedColors.resize(_max);
+		sortedColors.resize(amountColors);
 
-		for (int i = 0; i < _max; i++)
+		for (int i = 0; i < amountColors; i++)
 		{
 			ofFloatColor fc = ofFloatColor(
 				colorQuantizer.getColors()[i].r / 255.0f,
@@ -1160,7 +1197,7 @@ void ofxColorQuantizerHelper::buildQuantize()
 
 		buildSorting();
 
-		//ofLogNotice("ofxColorQuantizerHelper") << "Done";
+		ofLogNotice("ofxColorQuantizerHelper") << "Sorting Done";
 	}
 }
 
@@ -1170,7 +1207,6 @@ void ofxColorQuantizerHelper::loadImageAndQuantize(std::string _pathImg, int _nu
 	if (amountColors.get() != _numColors) {
 		amountColors = _numColors;
 	}
-
 
 	// measure load and resize image
 	d2_ = ofGetElapsedTimeMillis();
@@ -1497,15 +1533,6 @@ void ofxColorQuantizerHelper::kMeansTest()
 }
 
 //--------------------------------------------------------------
-ofxColorQuantizerHelper::ofxColorQuantizerHelper()
-{
-	setActive(true);
-
-	//ofAddListener(parameters.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
-	//ofAddListener(parameters_Advanced.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
-}
-
-//--------------------------------------------------------------
 void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs& eventArgs)
 {
 	if (!bKeys) return;
@@ -1666,22 +1693,6 @@ void ofxColorQuantizerHelper::exit()
 {
 	ofxSurfingHelpers::CheckFolder(path_Global);
 	saveAppSettings(params_AppSettings, path_Global + path_AppSettings);
-}
-
-//--------------------------------------------------------------
-ofxColorQuantizerHelper::~ofxColorQuantizerHelper()
-{
-	exit();
-
-	//removeKeysListeners();
-	//removeMouseListeners();
-	setActive(false);
-
-	// crashes?
-	ofRemoveListener(parameters.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
-	ofRemoveListener(parameters_Advanced.parameterChangedE(), this, &ofxColorQuantizerHelper::Changed_parameters);
-
-	//stbi_image_free(data);
 }
 
 //--------------------------------------------------------------
