@@ -21,6 +21,9 @@ void ofApp::setup()
 //--------------------------------------------------------------
 void ofApp::draw()
 {
+	string s = ofToString(ofGetFrameRate(), 1) + " FPS";
+	ofSetWindowTitle(s);
+
 	ofBackground(c);
 
 	//--
