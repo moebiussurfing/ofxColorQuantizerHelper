@@ -1,7 +1,7 @@
 ofxColorQuantizerHelper
 -----------------------
 
-**openFrameworks** add-on to get the dominant colors of a picture.  
+**openFrameworks** addon to get the dominant colors of a picture.  
 Helps the integration of the original **ofxColorQuantizer** coded by @**mantissa** into an OF app. 
 
 ## Screenshot
@@ -9,12 +9,13 @@ Helps the integration of the original **ofxColorQuantizer** coded by @**mantissa
 
 ## Overview
 * Get a palette with the dominant colors of a picture.  
-* Set the desired number of colors.
+  * Set the desired number of colors.
+  * Threaded quantizer process.
 * Different sorting modes: by **Hue/Saturation/Brightness** or **% of appearance**.
 * Put your images also into `bin/data/images/`.
-* Or drag files into the app window. 
+  * Or drag files into the app window. 
 * `ImGui` based. Grid preview and folder browser.
-* Threaded quantizer process.
+* Magnifed color picker. Draw the mouse wheel to zoom.
 
 ## Dependencies
 * [ofxSurfingImGui](https://github.com/moebiussurfing/ofxSurfingImGui)  
