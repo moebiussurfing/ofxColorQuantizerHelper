@@ -5,7 +5,9 @@ ofxColorQuantizerHelper
 Helps the integration of the original **ofxColorQuantizer** coded by @**mantissa** into an OF app. 
 
 ## Screenshots
+
 ![](/example_ColorQuatizer/Capture.PNG)  
+
 ![](/example_ColorQuatizerGradient/Capture.PNG)  
 
 ## Overview
@@ -35,7 +37,7 @@ Addon by **@moebiusSurfing**
 
 Original code from **@mantissa**.  
 https://github.com/mantissa/ofxColorQuantizer  
-Based on the [ocvColorQuantize](https://github.com/cinder/Cinder-OpenCV/blob/master/samples/ocvColorQuantize) demo that ships with Cinder:  
+Based on the [ocvColorQuantize](https://github.com/cinder/Cinder-OpenCV/blob/master/samples/ocvColorQuantize) demo that ships with Cinder.  
 Thanks!  
 
 ## License
