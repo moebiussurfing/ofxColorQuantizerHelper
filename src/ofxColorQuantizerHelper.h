@@ -120,7 +120,7 @@ private:
 private:
 	void doReset() {
 
-		bDoResetLib = true;
+		//bDoResetLib = true;
 		bDoResetPic = true;
 
 		thumbsSize = 150;
@@ -180,10 +180,8 @@ public:
 	void randomPalette();
 
 private:
-
 	// Image changed easy callback
 	bool bUpdate = false;
-
 public:
 	bool isUpdated() {
 		if (bUpdate) {
@@ -193,6 +191,22 @@ public:
 		else {
 			return false;
 		}
+	}
+private:
+	// Sort changed easy callback
+	bool bUpdateSorting = false;
+public:
+	bool isUpdatedbSorting() {
+		if (bUpdateSorting) {
+			bUpdateSorting = false;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	bool isProcessing() {
+		return colorQuantizer.isProcessing();
 	}
 
 private:
@@ -292,13 +306,14 @@ public:
 
 		else
 		{
-			vector<ofColor> _palette;
-			for (int col = 0; col < palette.size(); col++)
-			{
-				_palette.push_back(colorMapSortable[col].color);
-			}
+			return paletteSorted;
 
-			return _palette;
+			//vector<ofColor> _palette;
+			//for (int i = 0; i < palette.size(); i++)
+			//{
+			//	_palette.push_back(colorMapSortable[i].color);
+			//}
+			//return _palette;
 		}
 	}
 
@@ -311,7 +326,7 @@ public:
 	void setColorPtr(ofColor& c);//legacy
 	void setColor_BACK(ofColor& c);
 	void setColor_BACK_Refresh(bool& b);//legacy
-	void setColorPtrRefresh(bool& b);
+	//void setColorPtrRefresh(bool& b);
 
 private:
 	// Build palette from already quantized and sorted colors
@@ -426,6 +441,16 @@ private:
 	// Main palette
 	vector<ofColor> palette;
 
+	// Sorted palette
+	vector<ofColor> paletteSorted;
+public:
+	ofColor getColor(int index) {
+		if (index > paletteSorted.size() - 1) return ofColor(0);//error
+		else if (index < paletteSorted.size()) return paletteSorted[index];
+		else return ofColor(0);//error
+	}
+
+private:
 	float boxBgSize;
 	int boxSize_h;
 	int boxPad;

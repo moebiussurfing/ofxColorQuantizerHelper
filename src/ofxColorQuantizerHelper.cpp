@@ -174,6 +174,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 		//--
 
 		ui->AddSpacingSeparated();
+		ui->AddSpacing();
 
 		//if (ui->isMaximized()) ui->AddLabelBig("PICTURE");
 
@@ -191,15 +192,10 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			float hSrc = tex.getHeight();
 			float ratioSrc = hSrc / wSrc;
 
-			float wDisplay;
-			float hDisplay;
-
-			//TODO: weird flick. should be border size..
 			float offset = 0;
-			//float offset = 20;
 
-			wDisplay = _w100 - 2 * _spcx - offset;
-			hDisplay = wDisplay * ratioSrc;
+			float wDisplay = _w100 - 2 * _spcx - offset;
+			float hDisplay = wDisplay * ratioSrc;
 
 			const float H_MAX = 300;
 			if (hDisplay > H_MAX)
@@ -228,79 +224,95 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			imageInspect.drawImGuiImgeWidget(szDisplay, szSrc, bOver, bDebug);
 			ui->AddSpacing();
 
-			ui->Add(colorPicked, OFX_IM_COLOR_BOX_FULL_WIDTH);
-			ui->AddSpacing();
-			ui->Add(imageInspect.bGui, OFX_IM_TOGGLE_ROUNDED);
-			ui->SameLine();
-			ui->Add(imageInspect.bGui_Image, OFX_IM_TOGGLE_ROUNDED);
-			ui->AddSpacingBigSeparated();
+			if (colorQuantizer.isProcessing()) ui->PushInactive();
 
-			//--
-
-			// Image
-			/*
-			if (ImGui::ImageButton(
-				(ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID,
-				ImVec2(wDisplay, hDisplay)))
+			//if (!colorQuantizer.isProcessing())
 			{
-				ofLogNotice("ofxColorQuantizerHelper") << "Image clicked";
-
-				// Do on click
-				doSortNext();
+				ui->Add(colorPicked, OFX_IM_COLOR_BOX_FULL_WIDTH);
+				ui->AddSpacing();
+				if (ui->isMaximized()) {
+					ui->Add(imageInspect.bGui, OFX_IM_TOGGLE_ROUNDED);
+					ui->SameLine();
+					ui->Add(imageInspect.bGui_Image, OFX_IM_TOGGLE_ROUNDED);
+				}
+				ui->AddSpacingBigSeparated();
 			}
-			*/
+
+			if (colorQuantizer.isProcessing()) ui->PopInactive();
 		}
 
 		//--
 
-		ui->AddSpacing();
-		ui->AddSpacing();
+		/*
+		// Image
+		if (ImGui::ImageButton(
+			(ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID,
+			ImVec2(wDisplay, hDisplay)))
+		{
+			ofLogNotice("ofxColorQuantizerHelper") << "Image clicked";
+
+			// Do on click
+			doSortNext();
+		}
+		*/
 
 		//--
 
 		// 1. Palette colors
+		//if (!colorQuantizer.isProcessing())
+		if (colorQuantizer.isProcessing()) ui->PushInactive();
 
-		const auto p = getPalette(true);
-
-		// fit width
-		float wb = (_w100 / (int)p.size()); // -_spc;
-
-		//TODO: fix width
-		//ui->AddLabelBig("COLORS");
-
-		for (int n = 0; n < p.size(); n++)
 		{
-			ImGui::PushID(n);
+			ui->AddSpacing();
+
+			//--
+
+			const auto p = getPalette(true);
 
 			// fit width
-			if (n != 0) ImGui::SameLine(0, 0);
+			float wb = (_w100 / (int)p.size());
 
-			// box colors
-			if (ImGui::ColorButton("##paletteQuantizer", p[n], colorEdiFlags, ImVec2(wb, hb * 2)))
+			for (int n = 0; n < p.size(); n++)
 			{
-				doUpdatePointerColor(n);
+				ImGui::PushID(n);
+
+				// fit width
+				if (n != 0) ImGui::SameLine(0, 0);
+
+				// box colors
+				if (ImGui::ColorButton("##paletteQuantizer", p[n], colorEdiFlags, ImVec2(wb, hb * 2)))
+				{
+					doUpdatePointerColor(n);
+				}
+
+				ImGui::PopID();
 			}
 
-			ImGui::PopID();
+			// amount
+			ui->AddSpacing();
+			ui->Add(amountColors, OFX_IM_STEPPER);
+			ui->AddSpacing();
+
+			//--
+
+			// Gui parameters
+
+			ui->AddLabelBig(sortedType_name);
+			//ui->AddSpacing();
+			if (ui->AddButton("SORT", OFX_IM_BUTTON_MEDIUM, 1))
+			{
+				doSortNext();
+			}
+
+			if (ui->isMaximized()) ui->AddSpacingSeparated();
 		}
 
-		ui->Add(amountColors, OFX_IM_STEPPER);
-		ui->AddSpacing();
+		if (colorQuantizer.isProcessing()) ui->PopInactive();
 
 		//--
 
-		// Gui parameters
-
-		if (ui->AddButton("SORT", OFX_IM_BUTTON_MEDIUM, 1))
-		{
-			doSortNext();
-		}
-
-		ui->AddLabel(sortedType_name);
-
 		if (ui->isMaximized())
 		{
-			ui->AddSpacingSeparated();
 			ui->AddAdvancedToggle();
 			ui->AddSpacing();
 
@@ -313,7 +325,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 
 				ui->SameLine();
 
-				if (ui->AddButton("Refresh", OFX_IM_BUTTON, 2))
+				if (ui->AddButton("Refresh Files", OFX_IM_BUTTON, 2))
 				{
 					// workflow
 					// to allow add more files on runtime
@@ -334,12 +346,12 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 
 #ifdef USE_IM_GUI__QUANTIZER_INTERNAL
 
-				ui->AddSpacingSeparated();
-
 				//if (ImGui::CollapsingHeader("LIBRARY", ImGuiTreeNodeFlags_None))
 				//ui->Add(bGui_Library, OFX_IM_TOGGLE_SMALL, 1);
 				if (bGui_Library)
 				{
+					ui->AddSpacingSeparated();
+
 					if (ui->isMaximized()) ui->AddLabelBig("THUMBS");
 
 					//if (!bResponsive)
@@ -423,18 +435,17 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 	float wmax = ofGetWidth();
 	float hmax = ofGetHeight() - 50;
 
-	// workround fix grid size troubles..
-	bool bFix = 1;
-	if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize + offset, wdef), ImVec2(wmax, hmax));
-	//if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize, wdef), ImVec2(wmax, hmax));
+	//// workaround fix grid size troubles..
+	//bool bFix = 1;
+	//if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize + offset, wdef), ImVec2(wmax, hmax));
+	////if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize + offset, hdef), ImVec2(wmax, hmax));
+	////if (bFix) ImGui::SetNextWindowSizeConstraints(ImVec2(thumbsSize, wdef), ImVec2(wmax, hmax));
 
 	ImGuiCond cond = ImGuiCond_FirstUseEver;
-
 	if (bDoResetLib) {
 		bDoResetLib = false;
 		cond = ImGuiCond_Always;
 	}
-
 	ImGui::SetNextWindowSize(ImVec2(wdef, hdef), cond);
 
 	if (bGui_Picture && bGuiLinked) ui->setNextWindowAfterWindowNamed(bGui_Picture);
@@ -583,27 +594,6 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::draw_ImGuiWidgets()
 {
-	//TODO:
-	////Image pickerImage;
-	//float wSrc = tex.getWidth();
-	//float hSrc = tex.getHeight();
-	//auto io = ImGui::GetIO();
-
-	//ImGui::ImageButton((ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID, ImVec2(wSrc, hSrc));
-	//ImRect rc = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
-	//ImVec2 mouseUVCoord = (io.MousePos - rc.Min) / rc.GetSize();
-	//mouseUVCoord.y = 1.f - mouseUVCoord.y;
-
-	//if (io.KeyShift && io.MouseDown[0] && mouseUVCoord.x >= 0.f && mouseUVCoord.y >= 0.f)
-	//{
-	//	//int width = pickerImage.mWidth;
-	//	//int height = pickerImage.mHeight;
-
-	//	//imageInspect(wSrc, hSrc, pickerImage.GetBits(), mouseUVCoord, displayedTextureSize);
-	//}
-
-	//--
-
 	if (!bGui) return;
 
 	draw_ImGuiPicture();
@@ -1324,7 +1314,7 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 			amountColors_PRE = amountColors;
 		}
 		else return;
-		
+
 		//clamp
 		amountColors.setWithoutEventNotifications(ofClamp(amountColors, amountColors.getMin(), amountColors.getMax()));
 
@@ -1352,7 +1342,6 @@ void ofxColorQuantizerHelper::buildSorting()
 
 	palette.clear();
 	palette.resize(sz);
-
 	for (int i = 0; i < sortedColors.size(); i++)
 	{
 		palette[i] = sortedColors[i].color;
@@ -1402,8 +1391,20 @@ void ofxColorQuantizerHelper::buildSorting()
 
 	//--
 
+	paletteSorted.clear();
+	for (int i = 0; i < palette.size(); i++)
+	{
+		paletteSorted.push_back(colorMapSortable[i].color);
+	}
+
+	//--
+
 	// Pointers back to 'communicate externally'
 	doUpdatePointers();
+
+	//--
+
+	bUpdateSorting = true;
 }
 
 //--------------------------------------------------------------
