@@ -14,7 +14,9 @@ Helps the integration of the original **ofxColorQuantizer** coded by @**mantissa
 * Get a palette with the dominant colors of a picture.  
   * Set the desired number of colors.
   * Threaded quantizer process.
-  * Magnifed color picker. Right Click to show. Ctrl + Mouse wheel to set zoom depth.
+  * Magnifed color picker. 
+    - Right Click to show. 
+    - Ctrl + Mouse wheel to set zoom depth.
 * Different sorting modes: by **Hue/Saturation/Brightness** or **% of appearance**.
 * Put your images also into `bin/data/images/`.
   * Or drag files into the app window. 
@@ -23,10 +25,11 @@ Helps the integration of the original **ofxColorQuantizer** coded by @**mantissa
 ## Dependencies
 * [ofxSurfingImGui](https://github.com/moebiussurfing/ofxSurfingImGui)  
 * [ofxColorQuantizer](https://github.com/moebiussurfing/ofxColorQuantizer) / FORK
-* ofxOpenCv / OF CORE
+* ofxOpenCv / _OF Core_
+* [ofxColorGradient](https://github.com/moebiussurfing/ofxColorGradient) / _Only for the gradient example._
 
 ## Note
-- Sometimes dragging files is not working on *Windows 10*, maybe because of something related to ownership or administration rights.
+- TODO: Sometimes dragging files is not working on *Windows 10*, maybe because of something related to ownership or administration rights.
 
 ## Tested Systems
 - **Windows10** / **VS2017** / **OF ~0.11+**
@@ -35,9 +38,9 @@ Helps the integration of the original **ofxColorQuantizer** coded by @**mantissa
 Addon by **@moebiusSurfing**  
 *(ManuMolina). 2020-2023.*  
 
-Original code from **@mantissa**.  
+Original engine core code taken from **@mantissa**.  
 https://github.com/mantissa/ofxColorQuantizer  
-Based on the [ocvColorQuantize](https://github.com/cinder/Cinder-OpenCV/blob/master/samples/ocvColorQuantize) demo that ships with Cinder.  
+Also based on the [ocvColorQuantize](https://github.com/cinder/Cinder-OpenCV/blob/master/samples/ocvColorQuantize) demo that ships with Cinder.  
 Thanks!  
 
 ## License
