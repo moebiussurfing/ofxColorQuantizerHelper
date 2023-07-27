@@ -4,14 +4,15 @@ ofxColorQuantizerHelper
 **openFrameworks** addon to get the dominant colors of a picture.  
 Helps the integration of the original **ofxColorQuantizer** coded by @**mantissa** into an OF app. 
 
-## Screenshot
-![](/example_ColorQuatizer/Capture.PNG)
+## Screenshots
+![](/example_ColorQuatizer/Capture.PNG)  
+![](/example_ColorQuatizerGradient/Capture.PNG)  
 
 ## Overview
 * Get a palette with the dominant colors of a picture.  
   * Set the desired number of colors.
   * Threaded quantizer process.
-  * Magnifed color picker. Ctrl + Mouse wheel to set zoom depth.
+  * Magnifed color picker. Right Click to show. Ctrl + Mouse wheel to set zoom depth.
 * Different sorting modes: by **Hue/Saturation/Brightness** or **% of appearance**.
 * Put your images also into `bin/data/images/`.
   * Or drag files into the app window. 
@@ -34,6 +35,7 @@ Addon by **@moebiusSurfing**
 
 Original code from **@mantissa**.  
 https://github.com/mantissa/ofxColorQuantizer  
+Based on the [ocvColorQuantize](https://github.com/cinder/Cinder-OpenCV/blob/master/samples/ocvColorQuantize) demo that ships with Cinder:  
 Thanks!  
 
 ## License
