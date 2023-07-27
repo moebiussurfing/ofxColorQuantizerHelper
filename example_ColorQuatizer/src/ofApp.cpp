@@ -7,7 +7,7 @@ void ofApp::setup()
 
 	ui.setup();
 
-	//-
+	//--
 
 	// Reference first or clicked palette color
 	// to be auto updated. 

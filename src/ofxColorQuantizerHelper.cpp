@@ -75,13 +75,13 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 	if (!bGui_Picture) return;
 
 	bool bDebug = ui->bDebug;
-	
+
 	// window lock move
 	// Locks moving window when mouse over image.	
 	static bool bOver = false;
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
 	if (ui->bAutoResize) window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
-	if (bOver) window_flags |= ImGuiWindowFlags_NoMove; 
+	if (bOver) window_flags |= ImGuiWindowFlags_NoMove;
 
 	//--
 
@@ -228,9 +228,9 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			imageInspect.drawImGuiImgeWidget(szDisplay, szSrc, bOver, bDebug);
 			ui->AddSpacing();
 
-			ui->Add(color, OFX_IM_COLOR_BOX_FULL_WIDTH);
+			ui->Add(colorPicked, OFX_IM_COLOR_BOX_FULL_WIDTH);
 			ui->AddSpacing();
-			ui->Add(imageInspect.bGui, OFX_IM_TOGGLE_ROUNDED); 
+			ui->Add(imageInspect.bGui, OFX_IM_TOGGLE_ROUNDED);
 			ui->SameLine();
 			ui->Add(imageInspect.bGui_Image, OFX_IM_TOGGLE_ROUNDED);
 			ui->AddSpacingBigSeparated();
@@ -903,21 +903,21 @@ void ofxColorQuantizerHelper::setup()
 	imageInspect.setup();
 
 	// Link color to be auto updated!
-	color.makeReferenceTo(imageInspect.colorPtr);
+	colorPicked.makeReferenceTo(imageInspect.colorPtr);
 
 	// Callback
-	listenerColor = color.newListener([&](ofColor& newColor) {
+	listenerColor = colorPicked.newListener([&](ofColor& newColor) {
 		ofLogNotice("ofxColorQuantizerHelper") << "Color Inspect: " << newColor;
 
-	if (myColor_BACK != nullptr)
-	{
-		myColor_BACK->set(newColor);
-
-		if (bUpdated_Color_BACK != nullptr)
+		if (myColor_BACK != nullptr)
 		{
-			(*bUpdated_Color_BACK) = true;
+			myColor_BACK->set(newColor);
+
+			if (bUpdated_Color_BACK != nullptr)
+			{
+				(*bUpdated_Color_BACK) = true;
+			}
 		}
-	}
 		});
 
 	//----
@@ -958,9 +958,10 @@ void ofxColorQuantizerHelper::draw()
 	{
 		// Debug elapsed time to process image quantizer
 		string s = "";
-		s += "Load " + ofToString(d2, 0) + " ms";
+		s += "DEBUG\n";
+		s += "Load " + ofToString(timeLoadDuration, 0) + " ms";
 		s += "\n";
-		s += "Qntz " + ofToString(d1, 0) + " ms";
+		s += "Qntz " + ofToString(timeQuantizeDuration, 0) + " ms";
 		ofxSurfingHelpers::drawImageAtBottomRight(imageSmall, s);
 	}
 
@@ -1148,16 +1149,18 @@ void ofxColorQuantizerHelper::doUpdatePointerColor(int n)
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::buildQuantize()
 {
-	//return;
-	//TODO: Here could be done the threading process!
-	d1_ = ofGetElapsedTimeMillis();
+	timeQuantizeStart = ofGetElapsedTimeMillis();
 
 	if (isLoadedImage && imageSmall.isAllocated())
 	{
-		//int _max = amountColors;
-		//int _max = amountColors + 1;
-		//int _max = colorQuantizer.getNumColors();
-		//int _max = colorQuantizer.getNumColors() + 1;
+		// clear palette while the quantize process..
+		for (int n = 0; n < palette.size(); n++)
+		{
+			palette[n] = ofColor(0, 0, 0, 100);
+			colorMapSortable[n].color = palette[n];
+		}
+		// clear picker
+		if (palette.size() > 0) colorPicked = palette[0];
 
 		colorQuantizer.setNumColors(amountColors);
 		colorQuantizer.quantize(imageSmall.getPixels());
@@ -1189,9 +1192,11 @@ void ofxColorQuantizerHelper::update(ofEventArgs& args) {
 
 		std::sort(sortedColors.begin(), sortedColors.end(), by_distance());
 
+		colorPicked = sortedColors[0].color;
+
 		//TODO:
-		d1 = ofGetElapsedTimeMillis() - d1_;
-		ofLogNotice("ofxColorQuantizerHelper") << "Time Quantizer: \n" << d1 << "ms";
+		timeQuantizeDuration = ofGetElapsedTimeMillis() - timeQuantizeStart;
+		ofLogNotice("ofxColorQuantizerHelper") << "Time Quantizer: \n" << timeQuantizeDuration << "ms";
 
 		//--
 
@@ -1209,7 +1214,7 @@ void ofxColorQuantizerHelper::loadImageAndQuantize(std::string _pathImg, int _nu
 	}
 
 	// measure load and resize image
-	d2_ = ofGetElapsedTimeMillis();
+	timeLoadStart = ofGetElapsedTimeMillis();
 
 	isLoadedImage = image.load(_pathImg);
 	if (isLoadedImage)
@@ -1242,7 +1247,7 @@ void ofxColorQuantizerHelper::loadImageAndQuantize(std::string _pathImg, int _nu
 		//--
 
 		// measure quantizer
-		d2 = ofGetElapsedTimeMillis() - d2_;
+		timeLoadDuration = ofGetElapsedTimeMillis() - timeLoadStart;
 
 		buildQuantize();
 	}
@@ -1319,10 +1324,11 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 			amountColors_PRE = amountColors;
 		}
 		else return;
+		
+		//clamp
+		amountColors.setWithoutEventNotifications(ofClamp(amountColors, amountColors.getMin(), amountColors.getMax()));
 
-		amountColors = ofClamp(amountColors, amountColors.getMin(), amountColors.getMax());
-
-		if (amountColors < amountColors.getMin() && amountColors > amountColors.getMax()) return;
+		//if (amountColors < amountColors.getMin() && amountColors > amountColors.getMax()) return;
 
 		// workflow
 		buildQuantize();

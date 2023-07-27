@@ -69,13 +69,13 @@ private:
 	int width, height, channels;
 
 	//measure times for image load and quantize
-	uint32_t d1 = 0;
-	uint32_t d1_ = 0;
-	uint32_t d2 = 0;
-	uint32_t d2_ = 0;
+	uint32_t timeQuantizeDuration = 0;
+	uint32_t timeQuantizeStart = 0;
+	uint32_t timeLoadDuration = 0;
+	uint32_t timeLoadStart = 0;
 
 	SurfImageInspect imageInspect;
-	ofParameter<ofColor> color{ "Color", ofColor(128, 128) };
+	ofParameter<ofColor> colorPicked{ "Color", ofColor(128, 128) };
 	ofEventListener listenerColor;
 
 public:
