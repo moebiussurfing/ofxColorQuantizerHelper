@@ -177,15 +177,15 @@ public:
 
 	void loadNext();
 	void loadPrev();
-	void randomPalette();
+	void randomImageFromDir();
 
 private:
 	// Image changed easy callback
-	bool bUpdate = false;
+	bool bUpdateImage = false;
 public:
-	bool isUpdated() {
-		if (bUpdate) {
-			bUpdate = false;
+	bool isUpdatedImage() {
+		if (bUpdateImage) {
+			bUpdateImage = false;
 			return true;
 		}
 		else {

@@ -22,11 +22,11 @@ public:
 	ofxSurfingGui ui;
 	void drawImGui();
 
-	ofColor c;
+	ofColor c = ofColor(0);
 
 	ofImage img;
 	bool bDrawImg = true;
 	ofxColorGradient<ofColor> gradient;
 
-	ofParameter<bool> bGui{"ofApp", false};
+	ofParameter<bool> bGui{"ofApp", 0};
 };

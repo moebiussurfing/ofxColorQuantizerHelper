@@ -26,15 +26,25 @@ void ofApp::draw()
 	s += ofToString(ofGetFrameRate(), 1) + " FPS";
 	ofSetWindowTitle(s);
 
+	ofBackground(c);
+
 	//--
 
-	ofBackground(c);
-	if (!colorQuantizer.isProcessing()) {
-		int pad = 200;
-		gradient.drawDebug(0, 0, ofGetWidth(), pad);
+	ofPushMatrix();
+
+	// make space for top color picked bar
+	int h_spc = 30;
+	ofTranslate(0, h_spc);
+
+	int h_gradient = 225;
+	if (!colorQuantizer.isProcessing())
+	{
+		ofPushStyle();
+		gradient.drawDebug(0, 0, ofGetWidth(), h_gradient);
 		ofSetColor(0, 200);
 		ofSetLineWidth(2);
-		ofDrawLine(0, pad, ofGetWidth(), pad);
+		ofDrawLine(0, h_gradient, ofGetWidth(), h_gradient);
+		ofPopStyle();
 	}
 
 	//--
@@ -42,12 +52,7 @@ void ofApp::draw()
 	// Image preview
 	if (bDrawImg)
 	{
-		if (colorQuantizer.isUpdated()) // easy callback
-		{
-			// get image
-			img = colorQuantizer.getImage();
-		}
-
+		// update
 		if (colorQuantizer.isUpdatedbSorting()) // easy callback
 		{
 			// get colors
@@ -57,9 +62,49 @@ void ofApp::draw()
 			}
 		}
 
+		// get image
+		if (colorQuantizer.isUpdatedImage()) // easy callback
+		{
+			// get image
+			img = colorQuantizer.getImage();
+		}
+
+		//--
+
 		// draw
-		ofxSurfingHelpers::drawImageResponsive(img);
+		if (img.isAllocated())
+		{
+			//ofTranslate(0, h_spc/2);
+
+			if (ofGetWidth() > ofGetHeight()) {
+				ofxSurfingHelpers::drawImageAtRight(img);//landscape
+			}
+			else {
+				ofPushStyle();
+
+				ofRectangle r{ 0,0, img.getWidth(),img.getHeight() };
+				r.scaleTo(ofGetCurrentViewport(), OF_SCALEMODE_FIT);
+				r.translateY(ofGetHeight() - r.getBottomLeft().y);
+
+				float h = r.getHeight();
+				float ydiff = ofGetHeight() - (h + h_gradient);
+				ofTranslate(0, -ydiff);
+
+				ofSetColor(255, 255);
+				img.draw(r.x, r.y, r.getWidth(), r.getHeight());
+
+				//line
+				ofSetColor(0, 200);
+				ofSetLineWidth(2);
+				ofDrawLine(r.getBottomLeft(), r.getBottomRight());
+				//ofDrawLine(r.getTopLeft(), r.getTopRight());
+
+				ofPopStyle();
+			}
+		}
 	}
+
+	ofPopMatrix();
 
 	//--
 
@@ -87,6 +132,9 @@ void ofApp::drawImGui()
 
 			ui.AddSpacing();
 			ui.AddToggle("Draw Image", bDrawImg, OFX_IM_TOGGLE_MEDIUM);
+
+			ui.AddSpacingBigSeparated();
+			ui.DrawWidgetsGlobalScaleMini();
 
 			ui.EndWindow();
 		}

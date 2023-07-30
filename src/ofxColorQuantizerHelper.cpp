@@ -76,12 +76,16 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 
 	bool bDebug = ui->bDebug;
 
+	static ofParameter<ofColor> colorIsProcessing {"color", ofColor(0), ofColor(0), ofColor(0)};
+	//colorIsProcessing.setWithoutEventNotifications(ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
+
 	// window lock move
 	// Locks moving window when mouse over image.	
 	static bool bOver = false;
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
 	if (ui->bAutoResize) window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
 	if (bOver) window_flags |= ImGuiWindowFlags_NoMove;
+	bool bIsProcessing = colorQuantizer.isProcessing();
 
 	//--
 
@@ -159,6 +163,8 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 
 		//--
 
+		if (bIsProcessing) ui->PushInactive();
+
 		if (ui->AddButton("<", OFX_IM_BUTTON_BIG, 2))
 		{
 			loadPrev();
@@ -170,6 +176,8 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 		{
 			loadNext();
 		}
+
+		if (bIsProcessing) ui->PopInactive();
 
 		//--
 
@@ -197,24 +205,13 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			float wDisplay = _w100 - 2 * _spcx - offset;
 			float hDisplay = wDisplay * ratioSrc;
 
+			//clamp size
 			const float H_MAX = 300;
 			if (hDisplay > H_MAX)
 			{
 				wDisplay = H_MAX / ratioSrc - 2 * _spcx;
+				hDisplay = wDisplay * ratioSrc;
 			}
-
-			//if (wSrc *ratioSrc > 400)
-			//float hMax = 400;
-			//if (hSrc > hMax) 
-			//{
-			//	hSrc = hMax;
-			//	wSrc = hSrc / ratioSrc;
-			//	wDisplay = _w50;
-			//}
-			//else
-			//{
-			//	wDisplay = _w99 - 20; // hardcoded pad to avoid flickering bug...
-			//}
 
 			//--
 
@@ -224,50 +221,47 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			imageInspect.drawImGuiImgeWidget(szDisplay, szSrc, bOver, bDebug);
 			ui->AddSpacing();
 
-			if (colorQuantizer.isProcessing()) ui->PushInactive();
+			if (bIsProcessing) ui->PushInactive();
 
-			//if (!colorQuantizer.isProcessing())
-			{
+			if (bIsProcessing) {
+				ui->Add(colorIsProcessing, OFX_IM_COLOR_BOX_FULL_WIDTH);
+
+			}
+			else {
 				ui->Add(colorPicked, OFX_IM_COLOR_BOX_FULL_WIDTH);
-				ui->AddSpacing();
-				if (ui->isMaximized()) {
-					ui->Add(imageInspect.bGui, OFX_IM_TOGGLE_ROUNDED);
-					ui->SameLine();
-					ui->Add(imageInspect.bGui_Image, OFX_IM_TOGGLE_ROUNDED);
-				}
-				ui->AddSpacingBigSeparated();
 			}
 
-			if (colorQuantizer.isProcessing()) ui->PopInactive();
+			ui->AddSpacing();
+			if (ui->isMaximized()) {
+				ui->Add(imageInspect.bGui, OFX_IM_TOGGLE_ROUNDED);
+				ui->SameLine();
+				ui->Add(imageInspect.bGui_Image, OFX_IM_TOGGLE_ROUNDED);
+			}
+			ui->AddSpacingBigSeparated();
+
+			if (bIsProcessing) ui->PopInactive();
 		}
-
-		//--
-
-		/*
-		// Image
-		if (ImGui::ImageButton(
-			(ImTextureID)(uintptr_t)fbo.getTexture(0).getTextureData().textureID,
-			ImVec2(wDisplay, hDisplay)))
-		{
-			ofLogNotice("ofxColorQuantizerHelper") << "Image clicked";
-
-			// Do on click
-			doSortNext();
-		}
-		*/
 
 		//--
 
 		// 1. Palette colors
-		//if (!colorQuantizer.isProcessing())
-		if (colorQuantizer.isProcessing()) ui->PushInactive();
+
+		if (bIsProcessing) ui->PushInactive();
 
 		{
 			ui->AddSpacing();
 
 			//--
 
-			const auto p = getPalette(true);
+			auto p = getPalette(true);
+
+			// set grey color when quantizing
+			if (bIsProcessing)
+			{
+				for (int n = 0; n < p.size(); n++) {
+					p[n].set(colorIsProcessing);
+				}
+			}
 
 			// fit width
 			float wb = (_w100 / (int)p.size());
@@ -307,7 +301,7 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 			if (ui->isMaximized()) ui->AddSpacingSeparated();
 		}
 
-		if (colorQuantizer.isProcessing()) ui->PopInactive();
+		if (bIsProcessing) ui->PopInactive();
 
 		//--
 
@@ -391,12 +385,14 @@ void ofxColorQuantizerHelper::draw_ImGuiPicture()
 		}
 
 		//----
-#endif
+
 		ui->EndWindow();
 	}
 
 	imageInspect.drawImGui();
 }
+
+#endif
 
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::draw_ImGuiLibrary()
@@ -544,7 +540,8 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 
 			bool b = (ImGui::ImageButton((ImTextureID)(uintptr_t)textureSourceID[n], szImgButton));
 			//bool b = (ImGui::ImageButton(GetImTextureID(textureSourceID[n]), szImgButton));
-			if (b)
+
+			if (b && !this->isProcessing())
 			{
 				ofLogNotice("ofxColorQuantizerHelper") << "THUMB: #" + ofToString(n) + " / " + dir.getName(n);
 
@@ -566,9 +563,6 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 
 			// Spacing and border
 			ImGui::PopStyleVar(4);
-			//ImGui::PopStyleVar();
-			//ImGui::PopStyleVar();
-			//ImGui::PopStyleVar();
 			//ImGui::PopStyleVar();
 
 			ImGui::PopID();
@@ -626,6 +620,8 @@ bool compareSaturation(const colorMapping& s1, const colorMapping& s2)
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::loadPrev()
 {
+	if (isProcessing()) return;
+
 	if (currentImage <= 0) currentImage = dir.size() - 1;
 	else currentImage--;
 
@@ -635,6 +631,8 @@ void ofxColorQuantizerHelper::loadPrev()
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::loadNext()
 {
+	if (isProcessing()) return;
+
 	if (currentImage < dir.size() - 1) currentImage++;
 	else if (currentImage == dir.size() - 1) currentImage = 0;
 
@@ -642,14 +640,14 @@ void ofxColorQuantizerHelper::loadNext()
 }
 
 //--------------------------------------------------------------
-void ofxColorQuantizerHelper::randomPalette()
+void ofxColorQuantizerHelper::randomImageFromDir()
 {
 	int pmin, pmax;
 	pmin = 0;
 	pmax = dir.size();
 	currentImage = ofRandom(pmin, pmax);
 
-	ofLogNotice("ofxColorQuantizerHelper") << "randomPalette: " << ofToString(currentImage);
+	ofLogNotice("ofxColorQuantizerHelper") << "randomImageFromDir: " << ofToString(currentImage);
 
 	//ofLogNotice("ofxColorQuantizerHelper") << "currentImage: " << ofToString(currentImage);
 	//if (dir.size() > 0 && currentImage < dir.size())
@@ -933,6 +931,9 @@ void ofxColorQuantizerHelper::setup()
 	params_AppSettings.add(params_Thumbs);
 	//params_AppSettings.add(bResponsive);
 #endif
+
+	//fix startup
+	//bUpdateImage = true;
 
 	doReset();
 
@@ -1276,7 +1277,7 @@ void ofxColorQuantizerHelper::Changed_parameters(ofAbstractParameter& e)
 			buildFromImageFile(imageName_path, amountColors);
 		}
 
-		bUpdate = true;
+		bUpdateImage = true;
 
 		refreshImageGuiTexture();
 	}
@@ -1543,6 +1544,7 @@ void ofxColorQuantizerHelper::kMeansTest()
 void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs& eventArgs)
 {
 	if (!bKeys) return;
+	if (isProcessing()) return;
 
 	const int& key = eventArgs.key;
 	ofLogNotice("ofxColorQuantizerHelper") << "key: " << key;
@@ -1585,14 +1587,14 @@ void ofxColorQuantizerHelper::keyPressed(ofKeyEventArgs& eventArgs)
 	{
 		loadPrev();
 	}
-	if (key == OF_KEY_DOWN)// || key == ' ')
+	if (key == OF_KEY_DOWN || key == ' ')
 	{
 		loadNext();
 	}
 
 	if (key == OF_KEY_RETURN)
 	{
-		randomPalette();
+		randomImageFromDir();
 	}
 
 	//-
@@ -1813,6 +1815,12 @@ void ofxColorQuantizerHelper::saveAppSettings(ofParameterGroup& g, std::string p
 void ofxColorQuantizerHelper::setColorPtr(ofColor& c)
 {
 	myColor_BACK = &c;
+
+	////fix startup black
+	//if (myColor_BACK != nullptr)
+	//{
+	//	myColor_BACK->set(ofColor(0));
+	//}
 }
 //--------------------------------------------------------------
 void ofxColorQuantizerHelper::setColor_BACK(ofColor& c)
