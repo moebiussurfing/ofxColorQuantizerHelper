@@ -3,7 +3,8 @@
 //--------------------------------------------------------------
 void ofApp::setup()
 {
-	ofxSurfingHelpers::setMonitorsLayout(1, true, true);//right monitor portrait
+	// window layout
+	//ofxSurfingHelpers::setMonitorsLayout(1, true, true);//right monitor portrait
 	//ofxSurfingHelpers::setMonitorsLayout(-1, false, true);//left monitor landscape
 
 	ui.setup();

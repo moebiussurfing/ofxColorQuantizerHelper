@@ -209,6 +209,12 @@ public:
 		return colorQuantizer.isProcessing();
 	}
 
+	bool isUpdated() {
+		if (isUpdatedbSorting()) return true;
+		if (isUpdatedImage()) return true;
+		return false;
+	}
+
 private:
 	//public:
 	std::string infoHelp;//key commands

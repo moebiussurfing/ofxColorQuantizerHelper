@@ -3,7 +3,8 @@
 //--------------------------------------------------------------
 void ofApp::setup()
 {
-	ofxSurfingHelpers::setMonitorsLayout(1, true, true);
+	// window layout
+	//ofxSurfingHelpers::setMonitorsLayout(1, true, true);
 	//ofxSurfingHelpers::setMonitorsLayout(-1, false, true);
 
 	ui.setup();
@@ -32,7 +33,8 @@ void ofApp::draw()
 	// Image preview
 	if (bDrawImg)
 	{
-		if (colorQuantizer.isUpdated())
+		//if (colorQuantizer.isUpdated())
+		if (colorQuantizer.isUpdatedImage())
 		{
 			img = colorQuantizer.getImage();
 		}

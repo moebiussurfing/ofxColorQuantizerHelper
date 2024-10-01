@@ -1734,7 +1734,8 @@ void ofxColorQuantizerHelper::dragEvent(ofDragInfo& eventArgs)
 			//TODO:
 			// set define to choice an OS to adapt file system
 
-			auto strs = ofSplitString(info.files[k], "\\");// Windows
+			auto strs = ofSplitString(info.files[k].string(), "\\"); // Windows
+			//auto strs = ofSplitString(info.files[k], "\\");// Windows
 			//auto strs = ofSplitString(info.files[k], "/");// macOS ?
 
 			ofLogNotice("ofxColorQuantizerHelper") << "route: " << ofToString(strs);
