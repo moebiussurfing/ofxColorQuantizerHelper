@@ -537,8 +537,8 @@ void ofxColorQuantizerHelper::draw_ImGuiLibrary()
 			//--
 
 			// Image button
-
-			bool b = (ImGui::ImageButton((ImTextureID)(uintptr_t)textureSourceID[n], szImgButton));
+			bool b = (ImGui::ImageButton("##imageButton", (ImTextureID)(uintptr_t)textureSourceID[n], szImgButton));
+			//bool b = (ImGui::ImageButton((ImTextureID)(uintptr_t)textureSourceID[n], szImgButton));
 			//bool b = (ImGui::ImageButton(GetImTextureID(textureSourceID[n]), szImgButton));
 
 			if (b && !this->isProcessing())
